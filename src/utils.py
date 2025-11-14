@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,9 @@ PATH_TO_BANNER = "../banner.txt"
 PATH_TO_USER_SETTINGS = "../user_settings.json"
 
 
-def print_banner(path_to_banner = PATH_TO_BANNER):
+# for main page
+
+def print_banner(path_to_banner=PATH_TO_BANNER):
     """
     prints a banner of the project ("FIREFINANCE" giant letters)
     :param path_to_banner: where is the banner. "../banner.txt" by default
@@ -323,3 +325,71 @@ def get_stock_prices(symbols: list[str]) -> list[dict[str, Any]]:
             prices.append({"stock": symbol, "price": float(price)})
 
     return prices
+
+
+# for services
+
+def filter_data_by_date(data: pd.DataFrame, year: int, month: int) -> pd.DataFrame:
+    """
+    Filters data by specified year and month.
+
+    Args:
+        data (pd.DataFrame): Input data
+        year (int): Year for filtering
+        month (int): Month for filtering (1-12)
+
+    Returns:
+        pd.DataFrame: Filtered data
+    """
+    mask = (data['Дата операции'].dt.year == year) & (data['Дата операции'].dt.month == month)
+    return data[mask].copy()
+
+
+def clean_cashback_data(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Cleans data from invalid cashback values.
+
+    Args:
+        data (pd.DataFrame): Data to clean
+
+    Returns:
+        pd.DataFrame: Cleaned data
+    """
+    cleaned_data = data.dropna(subset=['Кэшбэк'])
+
+    cleaned_data = cleaned_data[
+        cleaned_data['Кэшбэк'].apply(lambda x: isinstance(x, (int, float)))
+    ]
+
+    return cleaned_data
+
+
+def calculate_cashback_by_category(data: pd.DataFrame) -> Dict[str, float]:
+    """
+    Calculates cashback sum by categories.
+
+    Args:
+        data (pd.DataFrame): Data for calculation
+
+    Returns:
+        Dict[str, float]: Dictionary with categories and cashback amounts
+    """
+    cashback_by_category = data.groupby('Категория')['Кэшбэк'].sum()
+    return {category: round(float(amount), 2) for category, amount in cashback_by_category.items()}
+
+
+def sort_results(result_dict: Dict[str, float], sort_by: str) -> Dict[str, float]:
+    """
+    Sorts results according to sort_by parameter.
+
+    Args:
+        result_dict (Dict[str, float]): Dictionary with results
+        sort_by (str): Sorting parameter ('cat' or 'sum')
+
+    Returns:
+        Dict[str, float]: Sorted dictionary
+    """
+    if sort_by == 'sum':
+        return dict(sorted(result_dict.items(), key=lambda x: x[1], reverse=True))
+    else:  # 'cat' или любое другое значение
+        return dict(sorted(result_dict.items()))
