@@ -8,8 +8,12 @@ import pandas as pd
 
 from src.api_client import fetch_from_apilayer, fetch_from_marketstack
 
+# default paths
+PATH_TO_BANNER = "../banner.txt"
+PATH_TO_USER_SETTINGS = "../user_settings.json"
 
-def print_banner(path_to_banner: str = "../banner.txt"):
+
+def print_banner(path_to_banner = PATH_TO_BANNER):
     """
     prints a banner of the project ("FIREFINANCE" giant letters)
     :param path_to_banner: where is the banner. "../banner.txt" by default
@@ -18,7 +22,7 @@ def print_banner(path_to_banner: str = "../banner.txt"):
         print(f.read())
 
 
-def load_user_settings(filepath: str | Path = "../user_settings.json") -> dict:
+def load_user_settings(filepath: str | Path = PATH_TO_USER_SETTINGS) -> dict:
     """
     loads user settings from json file
     :param filepath: path to settings file. "../user_settings.json" if not specified
@@ -28,7 +32,7 @@ def load_user_settings(filepath: str | Path = "../user_settings.json") -> dict:
         return json.load(f)
 
 
-def get_user_currencies(filepath: str | Path = "../user_settings.json") -> list[str]:
+def get_user_currencies(filepath: str | Path = PATH_TO_USER_SETTINGS) -> list[str]:
     """
     returns list of user currencies from user settings file
     :param filepath: path to settings file. "../user_settings.json" if not specified
@@ -38,7 +42,7 @@ def get_user_currencies(filepath: str | Path = "../user_settings.json") -> list[
     return settings.get("user_currencies", [])
 
 
-def get_user_stocks(filepath: str | Path = "../user_settings.json") -> list[str]:
+def get_user_stocks(filepath: str | Path = PATH_TO_USER_SETTINGS) -> list[str]:
     """
     returns list of user stocks from user settings file
     :param filepath: path to settings file. "../user_settings.json" if not specified
