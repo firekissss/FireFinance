@@ -1,6 +1,9 @@
 import json
 from datetime import datetime
+from typing import Optional
 
+from decorators import report_to_file
+from reports import spending_by_category
 from services import analyze_cashback_categories
 from src.utils import get_greeting_by_current_time, get_cards_info, import_transactions_from_file, \
     filter_by_date_interval, get_date_interval, get_top_transactions, get_currency_rates, get_user_currencies, \
@@ -44,5 +47,45 @@ def main_page_view(input_date: str, input_format: str = "%Y-%m-%d %H:%M:%S") -> 
 
 
 def services_page_view(year: int, month: int) -> str:
+    """
+    Displays services page with cashback categories analysis.
+
+    Args:
+        year: Year for analysis
+        month: Month for analysis (1-12)
+
+    Returns:
+        str: JSON string with cashback analysis by categories
+    """
     data = import_transactions_from_file("../data/example_operations.xlsx")
     return analyze_cashback_categories(data, year, month, sort_by='cat')
+
+
+def reports_page_view(
+        cat_name: str,
+        date: Optional[str] = None,
+        output_file: Optional[str] = None
+):
+    """
+    Displays reports page with spending analysis by category.
+
+    Args:
+        cat_name: Category name to analyze
+        date: End date for analysis period (YYYY-MM-DD format). If None, uses current date.
+        output_file: Output filename for saving the report. If None, uses default filename.
+
+    Returns:
+        pd.DataFrame: Filtered transactions for the specified category and period
+    """
+    data = import_transactions_from_file("../data/example_operations.xlsx")
+
+    # Декорируем динамически
+    if output_file:
+        wrapped = report_to_file(output_file)(spending_by_category)
+    else:
+        wrapped = report_to_file(spending_by_category)
+
+    # Вызываем декорированную версию
+    return wrapped(data, cat_name, date)
+
+
