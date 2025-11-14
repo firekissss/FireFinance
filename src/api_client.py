@@ -4,25 +4,23 @@ import requests
 from dotenv import load_dotenv
 
 
-def fetch_from_apilayer(endpoint: str, params: dict) -> dict:
+def fetch_from_api(
+        url: str,
+        params: dict | None = None,
+        headers: dict | None = None,
+        check_error_fn=None
+) -> dict:
     """
-    Apilayer API access function.
-    Handles errors and returns a JSON response.
-    :param endpoint: endpoint of apilayer.com
-    :param params: params for the request
-    :return: response and data if successful, otherwise raises exception
+    Универсальная функция для запросов к API.
+    Выполняет запрос, обрабатывает типовые ошибки, парсит JSON.
+
+    :param url: полный URL запроса
+    :param params: GET параметры
+    :param headers: HTTP заголовки
+    :param check_error_fn: функция проверки ошибки ответа API
     """
-    load_dotenv()
-    api_key = os.getenv("APILAYER_KEY")
-    if not api_key:
-        raise RuntimeError("API ключ не найден в .env (переменная APILAYER_KEY)")
-
-    base_url = "https://api.apilayer.com/currency_data"
-    url = f"{base_url}/{endpoint}"
-    headers = {"apikey": api_key}
-
     try:
-        response = requests.get(url, headers=headers, params=params, timeout=5)
+        response = requests.get(url, params=params, headers=headers, timeout=5)
         response.raise_for_status()
     except requests.Timeout:
         raise RuntimeError("Превышено время ожидания ответа от API")
@@ -36,50 +34,54 @@ def fetch_from_apilayer(endpoint: str, params: dict) -> dict:
     except ValueError:
         raise RuntimeError("Некорректный JSON в ответе API")
 
-    if not data.get("success", True):
-        raise RuntimeError(f"API вернул ошибку: {data.get('error', 'Неизвестная ошибка')}")
+    if check_error_fn:
+        check_error_fn(data)
 
     return data
 
 
+def fetch_from_apilayer(endpoint: str, params: dict) -> dict:
+    load_dotenv()
+    api_key = os.getenv("APILAYER_KEY")
+    if not api_key:
+        raise RuntimeError("API ключ не найден в .env (APILAYER_KEY)")
+
+    base_url = "https://api.apilayer.com/currency_data"
+    url = f"{base_url}/{endpoint}"
+
+    headers = {"apikey": api_key}
+
+    def check_error(data):
+        if not data.get("success", True):
+            raise RuntimeError(f"Apilayer ошибка: {data.get('error', 'Неизвестная ошибка')}")
+
+    return fetch_from_api(
+        url=url,
+        params=params,
+        headers=headers,
+        check_error_fn=check_error
+    )
+
+
 def fetch_from_marketstack(endpoint: str, params: dict) -> dict:
-    """
-    Marketstack API access function.
-    Handles errors and returns a JSON response.
-    :param endpoint: endpoint of marketstack.com
-    :param params: params for the request
-    :return: response and data if successful, otherwise raises exception
-    """
     load_dotenv()
     api_key = os.getenv("MARKETSTACK_KEY")
     if not api_key:
-        raise RuntimeError("API ключ не найден в .env (переменная MARKETSTACK_KEY)")
+        raise RuntimeError("API ключ не найден в .env (MARKETSTACK_KEY)")
 
     base_url = "http://api.marketstack.com/v2"
     url = f"{base_url}/{endpoint}"
 
-    # ключ у marketstack называется access_key, а не apikey
+    # Marketstack всегда требует access_key
     params = {"access_key": api_key, **params}
 
-    try:
-        response = requests.get(url, params=params, timeout=5)
-        response.raise_for_status()
-    except requests.Timeout:
-        raise RuntimeError("Превышено время ожидания ответа от Marketstack API")
-    except requests.ConnectionError:
-        raise RuntimeError("Ошибка подключения к интернету или API недоступен")
-    except requests.HTTPError as e:
-        raise RuntimeError(f"Ошибка HTTP: {e.response.status_code}")
+    def check_error(data):
+        if "error" in data:
+            raise RuntimeError(f"Marketstack ошибка: {data['error'].get('message', 'Неизвестная ошибка')}")
 
-    try:
-        data = response.json()
-    except ValueError:
-        raise RuntimeError("Некорректный JSON в ответе API")
-
-    # у marketstack нет 'success', но может быть 'error'
-    if "error" in data:
-        err = data["error"]
-        message = err.get("message", "Неизвестная ошибка")
-        raise RuntimeError(f"Marketstack API вернул ошибку: {message}")
-
-    return data
+    return fetch_from_api(
+        url=url,
+        params=params,
+        headers=None,
+        check_error_fn=check_error
+    )
