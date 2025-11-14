@@ -96,3 +96,4 @@ MANIFEST
 __pycache__/
 *.py[codz]
 *$py.class
+/qodana.yaml
