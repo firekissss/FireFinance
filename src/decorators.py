@@ -35,6 +35,8 @@ def report_to_file(filename: Optional[str] = None):
                 if not os.path.isabs(out_file):
                     out_file = os.path.join(DEFAULT_REPORT_DIR, out_file)
 
+            os.makedirs(os.path.dirname(out_file), exist_ok=True)
+
             # Convert DataFrame to JSON-friendly format
             if isinstance(result, pd.DataFrame):
                 # pandas сам умеет сериализовать Timestamp

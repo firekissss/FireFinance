@@ -97,3 +97,4 @@ __pycache__/
 *.py[codz]
 *$py.class
 /qodana.yaml
+/data/reports/
