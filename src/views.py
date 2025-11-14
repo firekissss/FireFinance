@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+from services import analyze_cashback_categories
 from src.utils import get_greeting_by_current_time, get_cards_info, import_transactions_from_file, \
     filter_by_date_interval, get_date_interval, get_top_transactions, get_currency_rates, get_user_currencies, \
     get_user_stocks, get_stock_prices, format_top_transactions_to_list
@@ -23,11 +24,11 @@ def main_page_view(input_date: str, input_format: str = "%Y-%m-%d %H:%M:%S") -> 
     currencies = get_user_currencies()
     stocks = get_user_stocks()
 
-    greeting = get_greeting_by_current_time() # str
-    cards_info = get_cards_info(filtered_dataframe) # list[dict]
-    top_5_transactions_list = format_top_transactions_to_list(top_5_transactions) # list
-    currency_rates = get_currency_rates("RUB", currencies) # list[dict[str, Any]]
-    stock_prices = get_stock_prices(stocks) # list[dict[str, Any]]
+    greeting = get_greeting_by_current_time()  # str
+    cards_info = get_cards_info(filtered_dataframe)  # list[dict]
+    top_5_transactions_list = format_top_transactions_to_list(top_5_transactions)  # list
+    currency_rates = get_currency_rates("RUB", currencies)  # list[dict[str, Any]]
+    stock_prices = get_stock_prices(stocks)  # list[dict[str, Any]]
 
     json_response = json.dumps(
         {
@@ -42,4 +43,6 @@ def main_page_view(input_date: str, input_format: str = "%Y-%m-%d %H:%M:%S") -> 
     return json_response
 
 
-
+def services_page_view(year: int, month: int) -> str:
+    data = import_transactions_from_file("../data/example_operations.xlsx")
+    return analyze_cashback_categories(data, year, month, sort_by='cat')
