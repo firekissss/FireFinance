@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -393,3 +393,67 @@ def sort_results(result_dict: Dict[str, float], sort_by: str) -> Dict[str, float
         return dict(sorted(result_dict.items(), key=lambda x: x[1], reverse=True))
     else:  # 'cat' или любое другое значение
         return dict(sorted(result_dict.items()))
+
+
+# for reports
+
+
+def calculate_date_range(date: Optional[str] = None, months_period: int = 3) -> tuple[datetime, datetime]:
+    """
+    Calculates start and end dates for the specified period.
+
+    Args:
+        date: End date string (YYYY-MM-DD) or None for current date
+        months_period: Number of months to look back
+
+    Returns:
+        tuple: (end_date, start_date) datetime objects
+    """
+    if date is None:
+        end_date = datetime.now()
+    else:
+        end_date = datetime.strptime(date, "%Y-%m-%d")
+
+    start_date = end_date - pd.DateOffset(months=months_period)
+    return end_date, start_date
+
+
+def prepare_transactions_data(transactions: pd.DataFrame) -> pd.DataFrame:
+    """
+    Prepares transactions data by ensuring proper datetime format.
+
+    Args:
+        transactions: Original transactions DataFrame
+
+    Returns:
+        pd.DataFrame: Prepared DataFrame with datetime column
+    """
+    df = transactions.copy()
+    df["Дата операции"] = pd.to_datetime(df["Дата операции"])
+    return df
+
+
+def filter_transactions_by_category_and_date(
+        df: pd.DataFrame,
+        category: str,
+        start_date: datetime,
+        end_date: datetime
+) -> pd.DataFrame:
+    """
+    Filters transactions by category and date range.
+
+    Args:
+        df: Prepared transactions DataFrame
+        category: Category to filter by
+        start_date: Start of date range
+        end_date: End of date range
+
+    Returns:
+        pd.DataFrame: Filtered transactions
+    """
+    filtered = df[
+        (df["Категория"] == category) &
+        (df["Дата операции"] >= start_date) &
+        (df["Дата операции"] <= end_date)
+        ]
+    return filtered
