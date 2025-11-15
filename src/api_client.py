@@ -34,7 +34,7 @@ def get_api_key(env_var: str, provider_name: str) -> str:
     return api_key
 
 
-def create_apilayer_headers(api_key: str) -> dict:
+def _create_apilayer_headers(api_key: str) -> dict:
     """
     Creates headers for Apilayer API.
 
@@ -48,7 +48,7 @@ def create_apilayer_headers(api_key: str) -> dict:
     return {"apikey": api_key}
 
 
-def create_marketstack_params(api_key: str, additional_params: dict) -> dict:
+def _create_marketstack_params(api_key: str, additional_params: dict) -> dict:
     """
     Creates parameters for Marketstack API.
 
@@ -63,7 +63,7 @@ def create_marketstack_params(api_key: str, additional_params: dict) -> dict:
     return {"access_key": api_key, **additional_params}
 
 
-def check_apilayer_error(data: dict) -> None:
+def _check_apilayer_error(data: dict) -> None:
     """
     Checks for errors in Apilayer API response.
 
@@ -81,7 +81,7 @@ def check_apilayer_error(data: dict) -> None:
         raise RuntimeError(f"Apilayer ошибка: {error_message}")
 
 
-def check_marketstack_error(data: dict) -> None:
+def _check_marketstack_error(data: dict) -> None:
     """
     Checks for errors in Marketstack API response.
 
@@ -99,7 +99,6 @@ def check_marketstack_error(data: dict) -> None:
         raise RuntimeError(f"Marketstack ошибка: {error_message}")
 
 
-@log_exceptions(logger)
 def fetch_from_api(
         url: str,
         params: Optional[dict] = None,
@@ -155,7 +154,6 @@ def fetch_from_api(
     return data
 
 
-@log_exceptions(logger)
 def fetch_from_apilayer(endpoint: str, params: dict) -> dict:
     """
     Fetches data from Apilayer API.
@@ -173,17 +171,16 @@ def fetch_from_apilayer(endpoint: str, params: dict) -> dict:
     api_key = get_api_key("APILAYER_KEY", "Apilayer")
     base_url = "https://api.apilayer.com/currency_data"
     url = f"{base_url}/{endpoint}"
-    headers = create_apilayer_headers(api_key)
+    headers = _create_apilayer_headers(api_key)
 
     return fetch_from_api(
         url=url,
         params=params,
         headers=headers,
-        check_error_fn=check_apilayer_error
+        check_error_fn=_check_apilayer_error
     )
 
 
-@log_exceptions(logger)
 def fetch_from_marketstack(endpoint: str, params: dict) -> dict:
     """
     Fetches data from Marketstack API.
@@ -201,11 +198,11 @@ def fetch_from_marketstack(endpoint: str, params: dict) -> dict:
     api_key = get_api_key("MARKETSTACK_KEY", "Marketstack")
     base_url = "http://api.marketstack.com/v2"
     url = f"{base_url}/{endpoint}"
-    request_params = create_marketstack_params(api_key, params)
+    request_params = _create_marketstack_params(api_key, params)
 
     return fetch_from_api(
         url=url,
         params=request_params,
         headers=None,
-        check_error_fn=check_marketstack_error
+        check_error_fn=_check_marketstack_error
     )

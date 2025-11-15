@@ -1,7 +1,7 @@
 import pandas as pd
 import json
 
-from utils import filter_data_by_date, clean_cashback_data, calculate_cashback_by_category, sort_results
+from utils import filter_data_by_date, _clean_cashback_data, calculate_cashback_by_category, _sort_results
 
 from logs import get_logger
 from decorators import log_exceptions
@@ -38,7 +38,7 @@ def analyze_cashback_categories(
         logger.warning(f"No data found for period {year}-{month:02d}")
         return json.dumps({})
 
-    cleaned_data = clean_cashback_data(filtered_data)
+    cleaned_data = _clean_cashback_data(filtered_data)
     logger.debug(f"After cleaning - shape: {cleaned_data.shape}")
 
     if cleaned_data.empty:
@@ -52,7 +52,7 @@ def analyze_cashback_categories(
         logger.warning("No cashback results calculated")
         return json.dumps({})
 
-    sorted_results = sort_results(cashback_results, sort_by)
+    sorted_results = _sort_results(cashback_results, sort_by)
     logger.info(f"Cashback analysis completed successfully. Found {len(sorted_results)} categories")
 
     return json.dumps(sorted_results, ensure_ascii=False, indent=2)
