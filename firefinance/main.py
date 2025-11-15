@@ -25,7 +25,7 @@ def main():
         logger.debug("Banner displayed")
 
         print("\nHello! How are you?\n"
-              "Here are pages that you can view from the menu:"
+              "Here are pages that you can view from the menu:\n"
               "1. Main page\n"
               "2. Services (for now - only analyse cashback within given month and year)\n"
               "3. Reports (for now - only spending by categories)\n"
