@@ -3,12 +3,10 @@ from typing import Optional
 import pandas as pd
 from logs import get_logger
 from utils import calculate_date_range, filter_transactions_by_category_and_date
-from decorators import log_exceptions
 
 logger = get_logger(__name__)
 
 
-@log_exceptions(logger)
 def spending_by_category(transactions: pd.DataFrame,
                          category: str,
                          date: Optional[str] = None,

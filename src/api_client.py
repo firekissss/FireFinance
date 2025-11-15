@@ -5,7 +5,6 @@ import requests
 from dotenv import load_dotenv
 
 from logs import get_logger
-from decorators import log_exceptions
 
 logger = get_logger(__name__)
 

@@ -4,12 +4,10 @@ import json
 from utils import filter_data_by_date, _clean_cashback_data, calculate_cashback_by_category, _sort_results
 
 from logs import get_logger
-from decorators import log_exceptions
 
 logger = get_logger(__name__)
 
 
-@log_exceptions(logger)
 def analyze_cashback_categories(
         data: pd.DataFrame,
         year: int,
