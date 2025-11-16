@@ -98,3 +98,4 @@ __pycache__/
 /qodana.yaml
 /data/reports/
 /logs
+/tests/test_logs/
