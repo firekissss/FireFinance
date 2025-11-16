@@ -13,7 +13,7 @@ def main():
     main function, entry point for FireFinance
     """
     setup_logging(
-        level=logging.INFO,
+        level=logging.DEBUG,
         enable_console=True,
         enable_file=True
     )
@@ -38,7 +38,7 @@ def main():
             date = input("Enter the date: ")
             logger.debug(f"Main page requested with date: {date}")
             print("OK lets go, look at this: \n")
-            result = main_page_view(date if date else "2020-01-05 22:30:50")
+            result = main_page_view(date if date else "2020-01-30 22:30:50")
             print(result)
             logger.info("Main page view completed successfully")
 

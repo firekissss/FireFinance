@@ -538,7 +538,7 @@ def _sort_results(result_dict: Dict[str, float], sort_by: str) -> Dict[str, floa
     Returns:
         Dict[str, float]: Sorted dictionary
     """
-    logger.debug(f"Sorting {len(result_dict)} results by {'category name' if sort_by == 'cat' else 'cashback amount'}'")
+    logger.debug(f"Sorting {len(result_dict)} results by {'category name' if sort_by == 'cat' else 'cashback amount'}")
 
     if not result_dict:
         logger.debug("Empty dictionary provided for sorting")
