@@ -2,9 +2,7 @@ import logging
 
 import pandas as pd
 import pytest
-
-from conftest import test_logger_fixture
-from decorators import report_to_file, log_exceptions
+from src.decorators import report_to_file, log_exceptions
 
 
 #       report_to_file()

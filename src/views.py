@@ -2,15 +2,15 @@ import json
 from datetime import datetime
 from typing import Optional
 
-from decorators import report_to_file
-from reports import spending_by_category
-from services import analyze_cashback_categories
+from src.decorators import report_to_file
+from src.reports import spending_by_category
+from src.services import analyze_cashback_categories
 from src.utils import get_greeting_by_current_time, get_cards_info, import_transactions_from_file, \
     filter_by_date_interval, get_date_interval, get_top_transactions, get_currency_rates, get_user_currencies, \
     get_user_stocks, get_stock_prices, format_top_transactions_to_list
 
-from logs import get_logger
-from decorators import log_exceptions
+from src.logs import get_logger
+from src.decorators import log_exceptions
 
 logger = get_logger(__name__)
 

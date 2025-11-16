@@ -12,7 +12,7 @@ from src.api_client import fetch_from_apilayer, fetch_from_marketstack
 PATH_TO_BANNER = "../banner.txt"
 PATH_TO_USER_SETTINGS = "../user_settings.json"
 
-from logs import get_logger
+from src.logs import get_logger
 
 logger = get_logger(__name__)
 

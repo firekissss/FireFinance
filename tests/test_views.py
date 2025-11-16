@@ -1,25 +1,24 @@
 import json
 import pandas as pd
-import pytest
 from unittest.mock import MagicMock
 
-from views import main_page_view, services_page_view, reports_page_view
+from src.views import main_page_view, services_page_view, reports_page_view
 
 
 # main_page_view
 def test_main_page_view_success(monkeypatch, df_mock, caplog):
-    monkeypatch.setattr("views.import_transactions_from_file", lambda _: df_mock)
-    monkeypatch.setattr("views.filter_by_date_interval", lambda df, s, e: df)
-    monkeypatch.setattr("views.get_top_transactions", lambda df: df.head(2))
-    monkeypatch.setattr("views.get_user_currencies", lambda: ["USD", "EUR"])
-    monkeypatch.setattr("views.get_user_stocks", lambda: ["AAPL"])
-    monkeypatch.setattr("views.get_stock_prices",
+    monkeypatch.setattr("src.views.import_transactions_from_file", lambda _: df_mock)
+    monkeypatch.setattr("src.views.filter_by_date_interval", lambda df, s, e: df)
+    monkeypatch.setattr("src.views.get_top_transactions", lambda df: df.head(2))
+    monkeypatch.setattr("src.views.get_user_currencies", lambda: ["USD", "EUR"])
+    monkeypatch.setattr("src.views.get_user_stocks", lambda: ["AAPL"])
+    monkeypatch.setattr("src.views.get_stock_prices",
                         lambda stocks: [{"ticker": "AAPL", "price": 100}])
-    monkeypatch.setattr("views.get_currency_rates",
+    monkeypatch.setattr("src.views.get_currency_rates",
                         lambda base, lst: [{"currency": "USD", "rate": 90}])
-    monkeypatch.setattr("views.get_greeting_by_current_time", lambda: "Добрый день!")
-    monkeypatch.setattr("views.get_cards_info", lambda df: [{"card": "test"}])
-    monkeypatch.setattr("views.format_top_transactions_to_list",
+    monkeypatch.setattr("src.views.get_greeting_by_current_time", lambda: "Добрый день!")
+    monkeypatch.setattr("src.views.get_cards_info", lambda df: [{"card": "test"}])
+    monkeypatch.setattr("src.views.format_top_transactions_to_list",
                         lambda df: [{"sum": -100}, {"sum": -50}])
 
     caplog.set_level("DEBUG")
@@ -38,8 +37,8 @@ def test_main_page_view_success(monkeypatch, df_mock, caplog):
 
 # services_page_view
 def test_services_page_view(monkeypatch, df_mock, caplog):
-    monkeypatch.setattr("views.import_transactions_from_file", lambda _: df_mock)
-    monkeypatch.setattr("views.analyze_cashback_categories", lambda df, y, m, sort_by:
+    monkeypatch.setattr("src.views.import_transactions_from_file", lambda _: df_mock)
+    monkeypatch.setattr("src.views.analyze_cashback_categories", lambda df, y, m, sort_by:
     json.dumps({"Еда": 150}, ensure_ascii=False))
 
     caplog.set_level("DEBUG")
@@ -55,12 +54,12 @@ def test_services_page_view(monkeypatch, df_mock, caplog):
 
 # reports_page_view
 def test_reports_page_view(monkeypatch, df_mock, caplog):
-    monkeypatch.setattr("views.import_transactions_from_file", lambda _: df_mock)
+    monkeypatch.setattr("src.views.import_transactions_from_file", lambda _: df_mock)
 
     # чтобы не трогать реальный декоратор report_to_file
     spending_mock = MagicMock(return_value=df_mock)
 
-    monkeypatch.setattr("views.spending_by_category", spending_mock)
+    monkeypatch.setattr("src.views.spending_by_category", spending_mock)
 
     # фейковый декоратор, который делает то же самое, что и обычный, только ничего не делает xD
     def fake_report_to_file(arg):
@@ -86,7 +85,7 @@ def test_reports_page_view(monkeypatch, df_mock, caplog):
         else:
             raise TypeError("Sorry you're not a winner")
 
-    monkeypatch.setattr("views.report_to_file", fake_report_to_file)
+    monkeypatch.setattr("src.views.report_to_file", fake_report_to_file)
 
     caplog.set_level("DEBUG")
 
