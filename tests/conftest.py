@@ -92,6 +92,7 @@ def temp_log_dir():
 @pytest.fixture()
 def cleanup_loggers():
     """Перед и после теста удаляет хендлеры у всех логгеров и очищает GLOBAL_HANDLERS."""
+
     def clear_all():
         # чистим root
         root = logging.getLogger()
@@ -119,9 +120,24 @@ def cleanup_loggers():
 
     # после теста
     clear_all()
-    # очищаем глобальный список хендлеров (чтобы не тащились в следующую параметризацию)
-    try:
-        from src import logs  # поправь импорт под свой модуль
-        logs.GLOBAL_HANDLERS = []
-    except Exception:
-        pass
+
+
+# for reports
+
+
+@pytest.fixture
+def sample_transactions():
+    # Простые тестовые данные
+    data = {
+        "id": [1, 2, 3, 4],
+        "category": ["food", "food", "transport", "food"],
+        "amount": [100, 50, 20, 75],
+        "date": ["2025-11-01", "2025-10-15", "2025-11-10", "2025-08-20"]
+    }
+    return pd.DataFrame(data)
+
+
+@pytest.fixture
+def fixed_date_range():
+    # Мок даты: конец и начало периода
+    return ("2025-11-15", "2025-08-15")

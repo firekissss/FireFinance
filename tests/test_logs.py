@@ -2,7 +2,6 @@ import logging
 import sys
 
 import pytest
-
 from src import logs
 from logging.handlers import RotatingFileHandler
 
@@ -26,9 +25,11 @@ def test_setup_logging_unique_logger(temp_log_dir, cleanup_loggers, enable_file,
     logger = logs.get_logger(logger_name)
     assert logger.name == logger_name
 
-    file_handlers = [h for h in logger.handlers if isinstance(h, RotatingFileHandler)]
-    console_handlers = [h for h in logger.handlers
+    root_logger = logging.getLogger()
+    file_handlers = [h for h in root_logger.handlers if isinstance(h, RotatingFileHandler)]
+    console_handlers = [h for h in root_logger.handlers
                         if isinstance(h, logging.StreamHandler) and getattr(h, 'stream', None) == sys.stdout]
+
     # интересный факт, строчка выше
     # RotatingFileHandler наследуется от FileHandler -> StreamHandler
     # до меня дошло через 6 часов посмотреть откуда наследуется этот класс

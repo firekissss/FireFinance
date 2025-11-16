@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 import pytest
 
+from conftest import test_logger_fixture
 from decorators import report_to_file, log_exceptions
 
 
@@ -51,16 +52,16 @@ def test_report_to_file_default_filename(mock_os_makedirs, mock_df_to_json, samp
 
 #       log_exceptions()
 
-def test_log_exceptions_no_error(test_logger):
-    @log_exceptions(test_logger)
+def test_log_exceptions_no_error(test_logger_fixture):
+    @log_exceptions(test_logger_fixture)
     def ok_func():
         return 10
 
     assert ok_func() == 10
 
 
-def test_log_exceptions_catches_exception(test_logger, caplog):
-    @log_exceptions(test_logger)
+def test_log_exceptions_catches_exception(test_logger_fixture, caplog):
+    @log_exceptions(test_logger_fixture)
     def bad_func():
         raise ValueError("something")
 
