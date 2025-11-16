@@ -219,3 +219,13 @@ def transactions_dataframe():
     df["Дата платежа"] = pd.to_datetime(df["Дата платежа"], format="%d.%m.%Y")
 
     return df
+
+
+# фикстура попроще - выпросил у нейронки, чтобы не ковырять огромную transactions_dataframe
+@pytest.fixture
+def df_mock():
+    return pd.DataFrame({
+        "Категория": ["Еда", "Еда", "Транспорт"],
+        "Сумма платежа": [-100, -50, -20],
+        "Дата платежа": pd.to_datetime(["2025-11-01", "2025-11-05", "2025-11-10"])
+    })
