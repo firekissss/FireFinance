@@ -461,6 +461,10 @@ def filter_data_by_date(data: pd.DataFrame, year: int, month: int) -> pd.DataFra
     Returns:
         pd.DataFrame: Filtered data
     """
+    if data.empty:
+        logger.warning("Empty dataframe provided for filtering")
+        return pd.DataFrame()
+
     logger.debug(f"Filtering data by date: {year}-{month:02d}. Input shape: {data.shape}")
 
     mask = (data['Дата операции'].dt.year == year) & (data['Дата операции'].dt.month == month)
