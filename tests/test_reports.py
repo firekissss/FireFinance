@@ -6,37 +6,37 @@ import reports
 
 
 @pytest.mark.parametrize("category, months_period", [
-    ("food", 3),
-    ("transport", 1),
+    ("Супермаркеты", 3),
+    ("Фастфуд", 1),
 ])
-def test_spending_by_category_filters_correctly(sample_transactions, fixed_date_range, category, months_period):
+def test_spending_by_category_filters_correctly(transactions_dataframe, fixed_date_range, category, months_period):
     with patch("reports.calculate_date_range") as mock_date_range, \
             patch("reports.filter_transactions_by_category_and_date") as mock_filter:
         mock_date_range.return_value = fixed_date_range
 
-        expected_filtered = sample_transactions[sample_transactions["category"] == category]
+        expected_filtered = transactions_dataframe[transactions_dataframe["Категория"] == category]
         mock_filter.return_value = expected_filtered
 
-        result = reports.spending_by_category(sample_transactions, category, months_period=months_period,
-                                              date="2025-11-15")
+        result = reports.spending_by_category(transactions_dataframe, category, months_period=months_period,
+                                              date="2007-03-30")
 
-        mock_date_range.assert_called_once_with("2025-11-15", months_period)
-        mock_filter.assert_called_once_with(sample_transactions, category, fixed_date_range[1], fixed_date_range[0])
+        mock_date_range.assert_called_once_with("2007-03-30", months_period)
+        mock_filter.assert_called_once_with(transactions_dataframe, category, fixed_date_range[1], fixed_date_range[0])
 
         pd.testing.assert_frame_equal(result, expected_filtered)
 
 
-def test_spending_by_category_logs(sample_transactions, fixed_date_range, caplog):
+def test_spending_by_category_logs(transactions_dataframe, fixed_date_range, caplog):
     caplog.set_level("DEBUG")
-    category = "food"
+    category = "Супермаркеты"
 
     with patch("reports.calculate_date_range") as mock_date_range, \
             patch("reports.filter_transactions_by_category_and_date") as mock_filter:
         mock_date_range.return_value = fixed_date_range
-        expected_filtered = sample_transactions[sample_transactions["category"] == category]
+        expected_filtered = transactions_dataframe[transactions_dataframe["Категория"] == category]
         mock_filter.return_value = expected_filtered
 
-        result = reports.spending_by_category(sample_transactions, category, months_period=3, date="2025-11-15")
+        result = reports.spending_by_category(transactions_dataframe, category, months_period=3, date="2025-11-15")
 
         # проверка логов
         assert any("Starting spending_by_category analysis" in rec.message for rec in caplog.records)
