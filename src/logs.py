@@ -6,6 +6,9 @@ from typing import Optional
 
 LOG_DIR_NAME = "logs"
 LOG_FILE_NAME = "app.log"
+GLOBAL_HANDLERS = []
+GLOBAL_LEVEL = logging.INFO
+
 
 
 def setup_logging(
@@ -68,6 +71,10 @@ def setup_logging(
         root_logger.removeHandler(handler)
         handler.close()
 
+    global GLOBAL_HANDLERS, GLOBAL_LEVEL
+    GLOBAL_HANDLERS = []
+    GLOBAL_LEVEL = level
+
     # File handler (с ротацией)
     if enable_file:
         file_handler = RotatingFileHandler(
@@ -79,6 +86,7 @@ def setup_logging(
         file_handler.setFormatter(formatter)
         file_handler.setLevel(level)
         root_logger.addHandler(file_handler)
+        GLOBAL_HANDLERS.append(file_handler)
 
     # Console handler
     if enable_console:
@@ -86,6 +94,7 @@ def setup_logging(
         console_handler.setFormatter(formatter)
         console_handler.setLevel(level)
         root_logger.addHandler(console_handler)
+        GLOBAL_HANDLERS.append(console_handler)
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -105,4 +114,16 @@ def get_logger(name: str) -> logging.Logger:
     logging.Logger
         Configured logger instance ready for use.
     """
-    return logging.getLogger(name)
+    logger = logging.getLogger(name)
+    logger.setLevel(GLOBAL_LEVEL)
+    logger.propagate = False
+
+    # очистка от старых хендлеров, вдруг они будут
+    for h in logger.handlers[:]:
+        logger.removeHandler(h)
+
+    # добавляем глобальные хендлеры, вместо того, чтобы наследовать их от корневого логгера
+    for h in GLOBAL_HANDLERS:
+        logger.addHandler(h)
+
+    return logger

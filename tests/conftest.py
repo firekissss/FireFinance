@@ -1,5 +1,6 @@
 import logging
 import os
+import tempfile
 from unittest.mock import mock_open, MagicMock
 
 import pandas as pd
@@ -68,10 +69,9 @@ def mock_df_to_json(monkeypatch):
     return m
 
 
-
 @pytest.fixture
-def test_logger():
-    logger = logging.getLogger("test_logger")
+def test_logger_fixture():
+    logger = logging.getLogger("test_logger_fixture")
     logger.setLevel(logging.ERROR)
 
     # очищаем хендлеры, если тесты запускаются многократно
@@ -80,3 +80,48 @@ def test_logger():
         logger.addHandler(handler)
 
     return logger
+
+
+@pytest.fixture
+def temp_log_dir():
+    """Создаёт временную директорию для логов и возвращает путь"""
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        yield tmpdirname
+
+
+@pytest.fixture()
+def cleanup_loggers():
+    """Перед и после теста удаляет хендлеры у всех логгеров и очищает GLOBAL_HANDLERS."""
+    def clear_all():
+        # чистим root
+        root = logging.getLogger()
+        for h in root.handlers[:]:
+            root.removeHandler(h)
+            try:
+                h.close()
+            except:
+                pass
+
+        # чистим все зарегистрированные логгеры
+        for logger_name, logger in logging.Logger.manager.loggerDict.items():
+            if isinstance(logger, logging.Logger):
+                for h in logger.handlers[:]:
+                    logger.removeHandler(h)
+                    try:
+                        h.close()
+                    except:
+                        pass
+
+    # до теста
+    clear_all()
+
+    yield
+
+    # после теста
+    clear_all()
+    # очищаем глобальный список хендлеров (чтобы не тащились в следующую параметризацию)
+    try:
+        from src import logs  # поправь импорт под свой модуль
+        logs.GLOBAL_HANDLERS = []
+    except Exception:
+        pass
