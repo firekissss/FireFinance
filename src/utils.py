@@ -12,16 +12,26 @@ from src.api_client import fetch_from_apilayer, fetch_from_marketstack
 PATH_TO_BANNER = "../banner.txt"
 PATH_TO_USER_SETTINGS = "../user_settings.json"
 
+from logs import get_logger
+
+logger = get_logger(__name__)
+
 
 # for main page
+
 
 def print_banner(path_to_banner=PATH_TO_BANNER):
     """
     prints a banner of the project ("FIREFINANCE" giant letters)
     :param path_to_banner: where is the banner. "../banner.txt" by default
     """
+    logger.debug(f"Loading banner from: {path_to_banner}")
+
     with open(path_to_banner, "r", encoding="utf-8") as f:
-        print(f.read())
+        banner_content = f.read()
+
+    print(banner_content)
+    logger.debug("Banner displayed successfully")
 
 
 def load_user_settings(filepath: str | Path = PATH_TO_USER_SETTINGS) -> dict:
@@ -30,8 +40,13 @@ def load_user_settings(filepath: str | Path = PATH_TO_USER_SETTINGS) -> dict:
     :param filepath: path to settings file. "../user_settings.json" if not specified
     :return: dict with user settings
     """
+    logger.debug(f"Loading user settings from: {filepath}")
+
     with open(filepath, "r", encoding="utf-8") as f:
-        return json.load(f)
+        settings = json.load(f)
+
+    logger.debug(f"User settings loaded successfully. Keys: {list(settings.keys())}")
+    return settings
 
 
 def get_user_currencies(filepath: str | Path = PATH_TO_USER_SETTINGS) -> list[str]:
@@ -40,8 +55,11 @@ def get_user_currencies(filepath: str | Path = PATH_TO_USER_SETTINGS) -> list[st
     :param filepath: path to settings file. "../user_settings.json" if not specified
     :return: list of user currencies
     """
+    logger.debug(f"Getting user currencies from: {filepath}")
     settings = load_user_settings(filepath)
-    return settings.get("user_currencies", [])
+    currencies = settings.get("user_currencies", [])
+    logger.debug(f"Found {len(currencies)} user currencies: {currencies}")
+    return currencies
 
 
 def get_user_stocks(filepath: str | Path = PATH_TO_USER_SETTINGS) -> list[str]:
@@ -50,8 +68,11 @@ def get_user_stocks(filepath: str | Path = PATH_TO_USER_SETTINGS) -> list[str]:
     :param filepath: path to settings file. "../user_settings.json" if not specified
     :return: list of user stocks
     """
+    logger.debug(f"Getting user stocks from: {filepath}")
     settings = load_user_settings(filepath)
-    return settings.get("user_stocks", [])
+    stocks = settings.get("user_stocks", [])
+    logger.debug(f"Found {len(stocks)} user stocks: {stocks}")
+    return stocks
 
 
 def get_greeting_by_current_time() -> str:
@@ -60,15 +81,19 @@ def get_greeting_by_current_time() -> str:
     :return: greeting string
     """
     current_time = datetime.now().hour
+    logger.debug(f"Current hour: {current_time}")
 
     if 6 <= current_time < 12:
-        return "Доброе утро"
+        greeting = "Доброе утро"
     elif 12 <= current_time < 18:
-        return "Добрый день"
+        greeting = "Добрый день"
     elif 18 <= current_time < 24:
-        return "Добрый вечер"
+        greeting = "Добрый вечер"
     else:
-        return "Доброй ночи"
+        greeting = "Доброй ночи"
+
+    logger.debug(f"Selected greeting: {greeting}")
+    return greeting
 
 
 def get_date_interval(input_date: datetime) -> tuple[datetime, datetime]:
@@ -78,9 +103,11 @@ def get_date_interval(input_date: datetime) -> tuple[datetime, datetime]:
     :param input_date: datetime object
     :return: start and end dates as datetime objects
     """
+    logger.debug(f"Calculating date interval for: {input_date}")
     date_end = input_date
     date_start = date_end.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
+    logger.debug(f"Date interval: {date_start} to {date_end}")
     return date_start, date_end
 
 
@@ -91,19 +118,39 @@ def import_transactions_from_file(file_path: str) -> pd.DataFrame:
     :param file_path: path to xlsx file
     :return: pd.DataFrame with transactions
     """
+    logger.info(f"Importing transactions from file: {file_path}")
+
     if not file_path.endswith('.xlsx'):
+        logger.error(f"Unsupported file type: {file_path}. Only .xlsx supported.")
         raise ValueError(f"Неподдерживаемый тип файла: {file_path}. Поддерживается только .xlsx.")
+
     try:
         df = pd.read_excel(file_path)
+        logger.debug(f"File loaded successfully. Initial shape: {df.shape}, columns: {list(df.columns)}")
+
         df["Дата операции"] = pd.to_datetime(df["Дата операции"], dayfirst=True, errors="coerce")
-        df = df.dropna(subset=["Дата операции"])  # строки в колонке почти всегда содержат дату, проверка страховочная
+        logger.debug("Date column converted to datetime")
+
+        # строки в колонке почти всегда содержат дату, но неплохо было бы в этом удостовериться
+        initial_count = len(df)
+        df = df.dropna(subset=["Дата операции"])
+        final_count = len(df)
+
+        if initial_count != final_count:
+            logger.warning(f"Removed {initial_count - final_count} rows with invalid dates")
+
+        logger.info(f"Transactions imported successfully. Final shape: {df.shape}")
+        return df
 
     except pd.errors.EmptyDataError:
+        logger.warning(f"File is empty: {file_path}")
         return pd.DataFrame()
+    except FileNotFoundError:
+        logger.error(f"File not found: {file_path}")
+        raise RuntimeError(f"Файл не найден: {file_path}")
     except Exception as e:
+        logger.error(f"Error reading file {file_path}: {e}")
         raise RuntimeError(f"Ошибка при открытии или чтении файла {file_path}: {e}") from e
-
-    return df
 
 
 def filter_by_date_interval(input_dataframe: pd.DataFrame, date_start: datetime, date_end: datetime) -> pd.DataFrame:
@@ -114,9 +161,17 @@ def filter_by_date_interval(input_dataframe: pd.DataFrame, date_start: datetime,
     :param date_end: end date (datetime object)
     :return: filtered dataframe
     """
-    return input_dataframe[
+    logger.debug(f"Filtering dataframe by date interval: {date_start} to {date_end}")
+    logger.debug(f"Input dataframe shape: {input_dataframe.shape}")
+
+    filtered_df = input_dataframe[
         (input_dataframe["Дата операции"] >= date_start) & (input_dataframe["Дата операции"] <= date_end)
         ]
+
+    logger.debug(f"Filtering completed. Output shape: {filtered_df.shape}")
+    logger.debug(f"Rows removed: {len(input_dataframe) - len(filtered_df)}")
+
+    return filtered_df
 
 
 def analyze_df_structure(df: pd.DataFrame) -> dict:
@@ -125,12 +180,19 @@ def analyze_df_structure(df: pd.DataFrame) -> dict:
     :param df: input dataframe
     :return: description of input dataframe
     """
-    return {
+    logger.debug(f"Analyzing dataframe structure. Shape: {df.shape}")
+
+    analysis = {
         "columns": df.columns.tolist(),
         "dtypes": df.dtypes.to_dict(),
         "missing_ratio": df.isna().mean().to_dict(),
         "example_rows": df.head(3).to_dict(orient="records")
     }
+
+    logger.debug(f"DataFrame analysis completed. Columns: {len(analysis['columns'])}, "
+                 f"missing ratios: {analysis['missing_ratio']}")
+
+    return analysis
 
 
 def get_cards_info(df: pd.DataFrame) -> list[dict]:
@@ -139,10 +201,18 @@ def get_cards_info(df: pd.DataFrame) -> list[dict]:
     :param df: input dataframe
     :return: list of dictionaries with cards info
     """
+    logger.debug(f"Getting cards info from dataframe. Shape: {df.shape}")
+
+    if df.empty:
+        logger.warning("Empty dataframe provided for cards info")
+        return []
+
     grouped = (
         df.groupby("Номер карты", as_index=False)
         .agg({"Сумма операции с округлением": "sum", "Кэшбэк": "sum"})
     )
+    logger.debug(f"Grouped by {len(grouped)} cards")
+
     result = [
         {
             "last_digits": str(card)[-4:],
@@ -156,6 +226,9 @@ def get_cards_info(df: pd.DataFrame) -> list[dict]:
         )
     ]
 
+    logger.info(f"Cards info generated for {len(result)} cards")
+    logger.debug(f"Cards summary: {result}")
+
     return result
 
 
@@ -166,6 +239,8 @@ def group_transfers_between_cards(df: pd.DataFrame) -> pd.DataFrame:
     :param df: input dataframe with duplicates
     :return: dataframe with grouped transactions (only positive payments left)
     """
+    logger.debug(f"Grouping transfers between cards. Input shape: {df.shape}")
+
     # группируем по описанию, MCC и номеру карты
     # если MCC и карта пустые у обеих операций, значит это, возможно, перевод между своими счетами
     to_drop = set()
@@ -183,10 +258,15 @@ def group_transfers_between_cards(df: pd.DataFrame) -> pd.DataFrame:
                     idx_neg = near.loc[near["Сумма платежа"] < 0].index
                     if len(idx_pos) == 1 and len(idx_neg) == 1:
                         to_drop.update(idx_neg.tolist())
+
     # убираем дубликаты-переводы
     if to_drop:
+        logger.debug(f"Found {len(to_drop)} transfer duplicates to remove")
         df = df.drop(index=list(to_drop))
+    else:
+        logger.debug("No transfer duplicates found")
 
+    logger.debug(f"After grouping transfers - shape: {df.shape}")
     return df
 
 
@@ -201,21 +281,31 @@ def get_top_transactions(df: pd.DataFrame, top_n: int = 5) -> pd.DataFrame:
     :param top_n: the amount of transactions to return
     :return: dataframe with top N transactions
     """
+    logger.info(f"Getting top {top_n} transactions from dataframe. Input shape: {df.shape}")
+
     if len(df) == 0:
+        logger.warning("Empty dataframe provided for top transactions")
         return df
 
     # фильтруем только успешные операции
+    initial_count = len(df)
     df = df[df["Статус"] == "OK"].copy()
+    successful_count = len(df)
+    logger.debug(f"Filtered successful transactions: {successful_count}/{initial_count}")
+
     if len(df) == 0:
+        logger.warning("No successful transactions found")
         return df
 
     # выборка из top_n*2 операций.
     abs_sum = df["Сумма платежа"].abs().to_numpy()
     if len(df) <= top_n * 2:
         top_df = df.copy()
+        logger.debug(f"Using all {len(df)} transactions for analysis")
     else:
         top_idx = np.argpartition(abs_sum, -top_n * 2)[-top_n * 2:]
         top_df = df.iloc[top_idx].copy()
+        logger.debug(f"Selected top {top_n * 2} transactions for analysis")
 
     top_df = group_transfers_between_cards(top_df)
 
@@ -228,7 +318,10 @@ def get_top_transactions(df: pd.DataFrame, top_n: int = 5) -> pd.DataFrame:
     ).drop(columns=["abs_sum"])
 
     # возврат ровно top_n строк
-    return top_df.head(top_n).reset_index(drop=True)
+    result = top_df.head(top_n).reset_index(drop=True)
+    logger.info(f"Top {len(result)} transactions prepared successfully")
+
+    return result
 
 
 def format_top_transactions_to_list(df: pd.DataFrame) -> list[dict]:
@@ -245,6 +338,12 @@ def format_top_transactions_to_list(df: pd.DataFrame) -> list[dict]:
     :param df: input dataframe
     :return: list of dictionaries with top N transactions
     """
+    logger.debug(f"Formatting {len(df)} transactions to list")
+
+    if df.empty:
+        logger.warning("Empty dataframe provided for formatting")
+        return []
+
     transactions = [
         {
             "date": pd.to_datetime(row["Дата операции"]).strftime("%d.%m.%Y")
@@ -258,6 +357,7 @@ def format_top_transactions_to_list(df: pd.DataFrame) -> list[dict]:
         for _, row in df.iterrows()
     ]
 
+    logger.debug(f"Successfully formatted {len(transactions)} transactions")
     return transactions
 
 
@@ -273,6 +373,12 @@ def get_currency_rates(base_currency: str, symbols: list[str]) -> list[dict[str,
     :param symbols: the currencies to get the rate of
     :return: a list of format dictionaries:
     """
+    logger.info(f"Fetching currency rates for {base_currency} -> {symbols}")
+
+    if not symbols:
+        logger.warning("Empty symbols list provided for currency rates")
+        return []
+
     params = {
         "source": base_currency,
         "currencies": ",".join(symbols)
@@ -281,6 +387,7 @@ def get_currency_rates(base_currency: str, symbols: list[str]) -> list[dict[str,
     data = fetch_from_apilayer("live", params)
     quotes = data.get("quotes")
     if not quotes:
+        logger.error("API response does not contain 'quotes' field")
         raise RuntimeError("Ответ не содержит поля 'quotes'")
 
     # Пример: quotes = {"USDRUB": 100, "USDEUR": 200}
@@ -289,9 +396,12 @@ def get_currency_rates(base_currency: str, symbols: list[str]) -> list[dict[str,
         key = f"{base_currency}{symbol}"
         rate = quotes.get(key)
         if rate is None:
+            logger.error(f"Rate not found for currency pair: {key}")
             raise RuntimeError(f"Нет курса для валюты {symbol}")
         rates.append({"currency": symbol, "rate": round(1 / rate, 2)})
 
+    logger.info(f"Successfully fetched rates for {len(rates)} currencies")
+    logger.debug(f"Rates: {rates}")
     return rates
 
 
@@ -307,6 +417,12 @@ def get_stock_prices(symbols: list[str]) -> list[dict[str, Any]]:
     :param symbols: the stocks to get the prices of
     :return: a list of format dictionaries:
     """
+    logger.info(f"Fetching stock prices for symbols: {symbols}")
+
+    if not symbols:
+        logger.warning("Empty symbols list provided for stock prices")
+        return []
+
     params = {
         "symbols": ",".join(symbols),
         "limit": len(symbols)
@@ -315,6 +431,7 @@ def get_stock_prices(symbols: list[str]) -> list[dict[str, Any]]:
     data = fetch_from_marketstack("eod/latest", params)
     stocks = data.get("data")
     if not stocks:
+        logger.error("API response does not contain 'data' field")
         raise RuntimeError("Ответ не содержит поля 'data'")
 
     prices = []
@@ -324,10 +441,13 @@ def get_stock_prices(symbols: list[str]) -> list[dict[str, Any]]:
         if symbol and price is not None:
             prices.append({"stock": symbol, "price": float(price)})
 
+    logger.info(f"Successfully fetched prices for {len(prices)} stocks")
+    logger.debug(f"Prices: {prices}")
     return prices
 
 
 # for services
+
 
 def filter_data_by_date(data: pd.DataFrame, year: int, month: int) -> pd.DataFrame:
     """
@@ -341,11 +461,18 @@ def filter_data_by_date(data: pd.DataFrame, year: int, month: int) -> pd.DataFra
     Returns:
         pd.DataFrame: Filtered data
     """
+    logger.debug(f"Filtering data by date: {year}-{month:02d}. Input shape: {data.shape}")
+
     mask = (data['Дата операции'].dt.year == year) & (data['Дата операции'].dt.month == month)
-    return data[mask].copy()
+    filtered_data = data[mask].copy()
+
+    logger.debug(f"Date filtering completed. Output shape: {filtered_data.shape}")
+    logger.debug(f"Rows filtered out: {len(data) - len(filtered_data)}")
+
+    return filtered_data
 
 
-def clean_cashback_data(data: pd.DataFrame) -> pd.DataFrame:
+def _clean_cashback_data(data: pd.DataFrame) -> pd.DataFrame:
     """
     Cleans data from invalid cashback values.
 
@@ -355,11 +482,22 @@ def clean_cashback_data(data: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Cleaned data
     """
+    logger.debug(f"Cleaning cashback data. Input shape: {data.shape}")
+
+    initial_count = len(data)
     cleaned_data = data.dropna(subset=['Кэшбэк'])
+
+    after_dropna_count = len(cleaned_data)
+    if initial_count != after_dropna_count:
+        logger.debug(f"Removed {initial_count - after_dropna_count} rows with NaN cashback")
 
     cleaned_data = cleaned_data[
         cleaned_data['Кэшбэк'].apply(lambda x: isinstance(x, (int, float)))
     ]
+
+    final_count = len(cleaned_data)
+    logger.debug(f"Cashback data cleaning completed. Output shape: {cleaned_data.shape}")
+    logger.debug(f"Total rows removed: {initial_count - final_count}")
 
     return cleaned_data
 
@@ -374,11 +512,22 @@ def calculate_cashback_by_category(data: pd.DataFrame) -> Dict[str, float]:
     Returns:
         Dict[str, float]: Dictionary with categories and cashback amounts
     """
+    logger.debug(f"Calculating cashback by category. Input shape: {data.shape}")
+
+    if data.empty:
+        logger.warning("Empty dataframe provided for cashback calculation")
+        return {}
+
     cashback_by_category = data.groupby('Категория')['Кэшбэк'].sum()
-    return {category: round(float(amount), 2) for category, amount in cashback_by_category.items()}
+    result = {category: round(float(amount), 2) for category, amount in cashback_by_category.items()}
+
+    logger.debug(f"Cashback calculated for {len(result)} categories")
+    logger.debug(f"Top 3 categories by cashback: {dict(sorted(result.items(), key=lambda x: x[1], reverse=True)[:3])}")
+
+    return result
 
 
-def sort_results(result_dict: Dict[str, float], sort_by: str) -> Dict[str, float]:
+def _sort_results(result_dict: Dict[str, float], sort_by: str) -> Dict[str, float]:
     """
     Sorts results according to sort_by parameter.
 
@@ -389,10 +538,21 @@ def sort_results(result_dict: Dict[str, float], sort_by: str) -> Dict[str, float
     Returns:
         Dict[str, float]: Sorted dictionary
     """
+    logger.debug(f"Sorting {len(result_dict)} results by {'category name' if sort_by == 'cat' else 'cashback amount'}")
+
+    if not result_dict:
+        logger.debug("Empty dictionary provided for sorting")
+        return {}
+
     if sort_by == 'sum':
-        return dict(sorted(result_dict.items(), key=lambda x: x[1], reverse=True))
+        result = dict(sorted(result_dict.items(), key=lambda x: x[1], reverse=True))
+        logger.debug("Results sorted by cashback amount (descending)")
     else:  # 'cat' или любое другое значение
-        return dict(sorted(result_dict.items()))
+        result = dict(sorted(result_dict.items()))
+        logger.debug("Results sorted by category name (alphabetical)")
+
+    logger.debug(f"First 3 sorted items: {list(result.items())[:3]}")
+    return result
 
 
 # for reports
@@ -409,28 +569,20 @@ def calculate_date_range(date: Optional[str] = None, months_period: int = 3) -> 
     Returns:
         tuple: (end_date, start_date) datetime objects
     """
+    logger.debug(f"Calculating date range. End date: {date}, months period: {months_period}")
+
     if date is None:
         end_date = datetime.now()
+        logger.debug(f"Using current date as end date: {end_date}")
     else:
         end_date = datetime.strptime(date, "%Y-%m-%d")
+        logger.debug(f"Using provided end date: {end_date}")
 
     start_date = end_date - pd.DateOffset(months=months_period)
+    logger.debug(f"Calculated start date: {start_date}")
+    logger.debug(f"Date range: {start_date} to {end_date}")
+
     return end_date, start_date
-
-
-def prepare_transactions_data(transactions: pd.DataFrame) -> pd.DataFrame:
-    """
-    Prepares transactions data by ensuring proper datetime format.
-
-    Args:
-        transactions: Original transactions DataFrame
-
-    Returns:
-        pd.DataFrame: Prepared DataFrame with datetime column
-    """
-    df = transactions.copy()
-    df["Дата операции"] = pd.to_datetime(df["Дата операции"])
-    return df
 
 
 def filter_transactions_by_category_and_date(
@@ -451,9 +603,19 @@ def filter_transactions_by_category_and_date(
     Returns:
         pd.DataFrame: Filtered transactions
     """
+    logger.debug(f"Filtering transactions by category '{category}' and date range {start_date} to {end_date}")
+    logger.debug(f"Input shape: {df.shape}")
+
     filtered = df[
         (df["Категория"] == category) &
         (df["Дата операции"] >= start_date) &
         (df["Дата операции"] <= end_date)
         ]
+
+    logger.debug(f"Filtering completed. Output shape: {filtered.shape}")
+    logger.debug(f"Rows matching criteria: {len(filtered)}")
+
+    if filtered.empty:
+        logger.warning(f"No transactions found for category '{category}' in specified date range")
+
     return filtered

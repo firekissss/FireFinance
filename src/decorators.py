@@ -1,10 +1,14 @@
 import functools
 import json
+import logging
 import os
 from datetime import datetime
 from typing import Optional
+import traceback
 
 import pandas as pd
+
+from logs import get_logger
 
 # path to reports default directory
 DEFAULT_REPORT_DIR = "../data/reports"
@@ -55,5 +59,45 @@ def report_to_file(filename: Optional[str] = None):
         func = filename
         filename = None
         return decorator(func)
+
+    return decorator
+
+
+# log
+
+
+def log_exceptions(logger):
+    """
+    Decorator that automatically logs any unhandled exceptions raised within the wrapped function.
+
+    When an exception occurs, it is logged with ERROR level (including the full stack trace)
+    using the provided logger, and then re-raised to preserve the original behavior.
+
+    Parameters
+    ----------
+    logger : logging.Logger
+        The logger instance used to record error messages.
+
+    Returns
+    -------
+    Callable
+        A decorator that wraps the target function with automatic exception logging.
+
+    Raises
+    ------
+    Exception
+        Any exception raised inside the wrapped function is logged and re-raised.
+    """
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                logger.exception(str(e))
+                raise
+
+        return wrapper
 
     return decorator

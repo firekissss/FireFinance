@@ -1,8 +1,10 @@
 from typing import Optional
 
 import pandas as pd
+from logs import get_logger
+from utils import calculate_date_range, filter_transactions_by_category_and_date
 
-from utils import calculate_date_range, prepare_transactions_data, filter_transactions_by_category_and_date
+logger = get_logger(__name__)
 
 
 def spending_by_category(transactions: pd.DataFrame,
@@ -21,11 +23,19 @@ def spending_by_category(transactions: pd.DataFrame,
     Returns:
         pd.DataFrame: Filtered transactions for the category over specified period
     """
+    logger.info(f"Starting spending_by_category analysis for category: '{category}', "
+                f"period: {months_period} months, end date: {date}")
+    logger.debug(f"Input transactions shape: {transactions.shape}")
+
     # Calculate date range
     end_date, start_date = calculate_date_range(date, months_period)
+    logger.debug(f"Calculated date range: {start_date} to {end_date}")
 
-    # Prepare and filter data
-    df = prepare_transactions_data(transactions)
-    filtered = filter_transactions_by_category_and_date(df, category, start_date, end_date)
+    # Filter data
+
+    filtered = filter_transactions_by_category_and_date(transactions, category, start_date, end_date)
+
+    logger.info(f"Successfully filtered transactions. Result shape: {filtered.shape}")
+    logger.debug(f"Filtered transactions sample:\n{filtered.head()}")
 
     return filtered
