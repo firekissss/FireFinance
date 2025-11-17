@@ -58,7 +58,6 @@ __pypackages__/
 target/
 
 # Unit test / coverage reports
-htmlcov/
 .tox/
 .nox/
 .coverage
@@ -99,3 +98,4 @@ __pycache__/
 /qodana.yaml
 /data/reports/
 /logs
+/tests/test_logs/

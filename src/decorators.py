@@ -4,11 +4,8 @@ import logging
 import os
 from datetime import datetime
 from typing import Optional
-import traceback
 
 import pandas as pd
-
-from logs import get_logger
 
 # path to reports default directory
 DEFAULT_REPORT_DIR = "../data/reports"

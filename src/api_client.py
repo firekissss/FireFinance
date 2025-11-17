@@ -4,7 +4,7 @@ from typing import Optional, Callable, Any
 import requests
 from dotenv import load_dotenv
 
-from logs import get_logger
+from src.logs import get_logger
 
 logger = get_logger(__name__)
 
