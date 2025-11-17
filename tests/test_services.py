@@ -1,10 +1,9 @@
-import pytest
-import pandas as pd
 import json
+
+import pandas as pd
+import pytest
+
 from src import services
-
-
-
 
 
 @pytest.mark.parametrize("year, month, sort_by, expected_categories", [

@@ -2,7 +2,8 @@ import logging
 
 import pandas as pd
 import pytest
-from src.decorators import report_to_file, log_exceptions
+
+from src.decorators import log_exceptions, report_to_file
 
 
 #       report_to_file()

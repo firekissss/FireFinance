@@ -1,20 +1,22 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 import requests
 
 from src.api_client import (
-    get_api_key,
-    _create_apilayer_headers,
-    _create_marketstack_params,
     _check_apilayer_error,
     _check_marketstack_error,
+    _create_apilayer_headers,
+    _create_marketstack_params,
     fetch_from_api,
     fetch_from_apilayer,
     fetch_from_marketstack,
+    get_api_key,
 )
 
 
 # get_api_key
+
 
 def test_get_api_key_success(monkeypatch):
     monkeypatch.setenv("TEST_KEY", "123")

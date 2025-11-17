@@ -1,8 +1,9 @@
 import json
-import pandas as pd
 from unittest.mock import MagicMock
 
-from src.views import main_page_view, services_page_view, reports_page_view
+import pandas as pd
+
+from src.views import main_page_view, reports_page_view, services_page_view
 
 
 # main_page_view
@@ -38,8 +39,10 @@ def test_main_page_view_success(monkeypatch, df_mock, caplog):
 # services_page_view
 def test_services_page_view(monkeypatch, df_mock, caplog):
     monkeypatch.setattr("src.views.import_transactions_from_file", lambda _: df_mock)
-    monkeypatch.setattr("src.views.analyze_cashback_categories", lambda df, y, m, sort_by:
-    json.dumps({"Еда": 150}, ensure_ascii=False))
+    monkeypatch.setattr(
+        "src.views.analyze_cashback_categories",
+        lambda df, y, m, sort_by: json.dumps({"Еда": 150}, ensure_ascii=False)
+    )
 
     caplog.set_level("DEBUG")
 

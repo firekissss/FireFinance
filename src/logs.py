@@ -4,6 +4,7 @@ import sys
 from logging.handlers import RotatingFileHandler
 from typing import Optional
 
+
 LOG_DIR_NAME = "logs"
 LOG_FILE_NAME = "app.log"
 

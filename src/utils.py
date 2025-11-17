@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 
 from src.api_client import fetch_from_apilayer, fetch_from_marketstack
+from src.logs import get_logger
+
 
 # default paths
 PATH_TO_BANNER = "../banner.txt"
 PATH_TO_USER_SETTINGS = "../user_settings.json"
-
-from src.logs import get_logger
 
 logger = get_logger(__name__)
 
@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 # for main page
 
 
-def print_banner(path_to_banner=PATH_TO_BANNER):
+def print_banner(path_to_banner: str = PATH_TO_BANNER) -> None:
     """
     prints a banner of the project ("FIREFINANCE" giant letters)
     :param path_to_banner: where is the banner. "../banner.txt" by default
@@ -43,7 +43,7 @@ def load_user_settings(filepath: str | Path = PATH_TO_USER_SETTINGS) -> dict:
     logger.debug(f"Loading user settings from: {filepath}")
 
     with open(filepath, "r", encoding="utf-8") as f:
-        settings = json.load(f)
+        settings: dict = json.load(f)
 
     logger.debug(f"User settings loaded successfully. Keys: {list(settings.keys())}")
     return settings
@@ -57,7 +57,7 @@ def get_user_currencies(filepath: str | Path = PATH_TO_USER_SETTINGS) -> list[st
     """
     logger.debug(f"Getting user currencies from: {filepath}")
     settings = load_user_settings(filepath)
-    currencies = settings.get("user_currencies", [])
+    currencies: list = settings.get("user_currencies", [])
     logger.debug(f"Found {len(currencies)} user currencies: {currencies}")
     return currencies
 
@@ -70,7 +70,7 @@ def get_user_stocks(filepath: str | Path = PATH_TO_USER_SETTINGS) -> list[str]:
     """
     logger.debug(f"Getting user stocks from: {filepath}")
     settings = load_user_settings(filepath)
-    stocks = settings.get("user_stocks", [])
+    stocks: list = settings.get("user_stocks", [])
     logger.debug(f"Found {len(stocks)} user stocks: {stocks}")
     return stocks
 
@@ -468,7 +468,7 @@ def filter_data_by_date(data: pd.DataFrame, year: int, month: int) -> pd.DataFra
     logger.debug(f"Filtering data by date: {year}-{month:02d}. Input shape: {data.shape}")
 
     mask = (data['Дата операции'].dt.year == year) & (data['Дата операции'].dt.month == month)
-    filtered_data = data[mask].copy()
+    filtered_data: pd.DataFrame = data[mask].copy()
 
     logger.debug(f"Date filtering completed. Output shape: {filtered_data.shape}")
     logger.debug(f"Rows filtered out: {len(data) - len(filtered_data)}")
@@ -523,7 +523,7 @@ def calculate_cashback_by_category(data: pd.DataFrame) -> Dict[str, float]:
         return {}
 
     cashback_by_category = data.groupby('Категория')['Кэшбэк'].sum()
-    result = {category: round(float(amount), 2) for category, amount in cashback_by_category.items()}
+    result = {str(category): round(float(amount), 2) for category, amount in cashback_by_category.items()}
 
     logger.debug(f"Cashback calculated for {len(result)} categories")
     logger.debug(f"Top 3 categories by cashback: {dict(sorted(result.items(), key=lambda x: x[1], reverse=True)[:3])}")

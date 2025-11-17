@@ -1,10 +1,11 @@
 import os
-from typing import Optional, Callable, Any
+from typing import Any, Callable, Optional
 
 import requests
 from dotenv import load_dotenv
 
 from src.logs import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -139,7 +140,7 @@ def fetch_from_api(
         raise RuntimeError(f"Ошибка HTTP: {e.response.status_code}")
 
     try:
-        data = response.json()
+        data: dict = response.json()
         logger.debug(f"Successfully parsed JSON response from {url}")
     except ValueError:
         logger.error(f"Invalid JSON in response from {url}. Response text: {response.text[:200]}...")

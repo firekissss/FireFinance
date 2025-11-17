@@ -3,15 +3,26 @@ import json
 import logging
 import os
 from datetime import datetime
-from typing import Optional
+from typing import Any, Callable, TypeVar, overload
 
 import pandas as pd
+
 
 # path to reports default directory
 DEFAULT_REPORT_DIR = "../data/reports"
 
+F = TypeVar("F", bound=Callable[..., Any])
 
-def report_to_file(filename: Optional[str] = None):
+
+@overload
+def report_to_file(filename: F) -> F: ...
+
+
+@overload
+def report_to_file(filename: str | None) -> Callable[[F], F]: ...
+
+
+def report_to_file(filename: Any = None) -> Any:
     """
     Decorator: saves the function result (DataFrame or dict)
     to a JSON file.
@@ -21,9 +32,9 @@ def report_to_file(filename: Optional[str] = None):
         filename: Output filename. If None, generates default filename.
     """
 
-    def decorator(func):
+    def decorator(func: F) -> F:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             result = func(*args, **kwargs)
 
             # Default filename generation
@@ -49,7 +60,7 @@ def report_to_file(filename: Optional[str] = None):
             print(f"Отчёт сохранён в файл: {out_file}")
             return result
 
-        return wrapper
+        return wrapper  # type: ignore
 
     # Handle decorator without parameters: @report_to_file
     if callable(filename):
@@ -63,7 +74,7 @@ def report_to_file(filename: Optional[str] = None):
 # log
 
 
-def log_exceptions(logger):
+def log_exceptions(logger: logging.Logger) -> Callable:
     """
     Decorator that automatically logs any unhandled exceptions raised within the wrapped function.
 
@@ -86,9 +97,9 @@ def log_exceptions(logger):
         Any exception raised inside the wrapped function is logged and re-raised.
     """
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
             except Exception as e:

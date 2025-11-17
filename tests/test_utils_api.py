@@ -1,10 +1,8 @@
-import pytest
 from unittest.mock import patch
 
-from src.utils import (
-    get_currency_rates,
-    get_stock_prices,
-)
+import pytest
+
+from src.utils import get_currency_rates, get_stock_prices
 
 
 # testing get_currency_rates

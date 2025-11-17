@@ -1,13 +1,10 @@
-import pytest
-import pandas as pd
 from datetime import datetime
 from unittest.mock import patch
 
-from src.utils import (
-    import_transactions_from_file,
-    filter_by_date_interval,
-    analyze_df_structure,
-)
+import pandas as pd
+import pytest
+
+from src.utils import analyze_df_structure, filter_by_date_interval, import_transactions_from_file
 
 
 # testing import_transactions_from_file

@@ -1,10 +1,8 @@
-import pandas as pd
 from datetime import datetime
 
-from src.utils import (
-    calculate_date_range,
-    filter_transactions_by_category_and_date,
-)
+import pandas as pd
+
+from src.utils import calculate_date_range, filter_transactions_by_category_and_date
 
 
 # testing calculate_date_range

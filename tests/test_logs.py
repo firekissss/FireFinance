@@ -1,9 +1,10 @@
 import logging
 import sys
+from logging.handlers import RotatingFileHandler
 
 import pytest
+
 from src import logs
-from logging.handlers import RotatingFileHandler
 
 
 @pytest.mark.parametrize("enable_file, enable_console", [
@@ -13,7 +14,7 @@ from logging.handlers import RotatingFileHandler
 ])
 @pytest.mark.parametrize("level", [logging.DEBUG, logging.INFO, logging.WARNING])
 def test_setup_logging_unique_logger(temp_log_dir, cleanup_loggers, enable_file, enable_console, level):
-    logger_name = f"i_spent_6_hours_on_this_test"
+    logger_name = "i_spent_6_hours_on_this_test"
 
     logs.setup_logging(
         level=level,

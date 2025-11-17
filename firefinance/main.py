@@ -1,14 +1,14 @@
 import logging
-from services import analyze_cashback_categories
-from utils import print_banner
-from views import main_page_view, services_page_view, reports_page_view
 
-from logs import setup_logging, get_logger
+from src.logs import get_logger, setup_logging
+from src.utils import print_banner
+from src.views import main_page_view, reports_page_view, services_page_view
+
 
 logger = get_logger(__name__)
 
 
-def main():
+def main() -> None:
     """
     main function, entry point for FireFinance
     """

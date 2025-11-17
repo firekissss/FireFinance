@@ -1,12 +1,8 @@
-import pandas as pd
 from datetime import datetime, timedelta
 
-from src.utils import (
-    get_cards_info,
-    group_transfers_between_cards,
-    get_top_transactions,
-    format_top_transactions_to_list,
-)
+import pandas as pd
+
+from src.utils import format_top_transactions_to_list, get_cards_info, get_top_transactions, group_transfers_between_cards
 
 
 # testing get_cards_info

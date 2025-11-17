@@ -1,15 +1,16 @@
-import pytest
 import json
 from datetime import datetime
 from unittest.mock import mock_open
 
+import pytest
+
 from src.utils import (
-    print_banner,
-    load_user_settings,
+    get_date_interval,
+    get_greeting_by_current_time,
     get_user_currencies,
     get_user_stocks,
-    get_greeting_by_current_time,
-    get_date_interval,
+    load_user_settings,
+    print_banner,
 )
 
 

@@ -1,6 +1,7 @@
-import pytest
-import pandas as pd
 from unittest.mock import patch
+
+import pandas as pd
+import pytest
 
 from src.reports import spending_by_category
 
@@ -17,8 +18,12 @@ def test_spending_by_category_filters_correctly(transactions_dataframe, fixed_da
         expected_filtered = transactions_dataframe[transactions_dataframe["Категория"] == category]
         mock_filter.return_value = expected_filtered
 
-        result = spending_by_category(transactions_dataframe, category, months_period=months_period,
-                                              date="2007-03-30")
+        result = spending_by_category(
+            transactions_dataframe,
+            category,
+            months_period=months_period,
+            date="2007-03-30"
+        )
 
         mock_date_range.assert_called_once_with("2007-03-30", months_period)
         mock_filter.assert_called_once_with(transactions_dataframe, category, fixed_date_range[1], fixed_date_range[0])

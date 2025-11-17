@@ -1,9 +1,10 @@
-import pandas as pd
 import json
 
-from src.utils import filter_data_by_date, _clean_cashback_data, calculate_cashback_by_category, _sort_results
+import pandas as pd
 
 from src.logs import get_logger
+from src.utils import _clean_cashback_data, _sort_results, calculate_cashback_by_category, filter_data_by_date
+
 
 logger = get_logger(__name__)
 
