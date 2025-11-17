@@ -74,9 +74,10 @@ def _check_apilayer_error(data: dict) -> None:
         RuntimeError: If API response indicates an error
     """
     if not data.get("success", True):
-        error_info = data.get('error', {})
-        error_message = error_info.get('info', 'Неизвестная ошибка') if isinstance(error_info, dict) else str(
-            error_info)
+        error_info = data.get("error", {})
+        error_message = (
+            error_info.get("info", "Неизвестная ошибка") if isinstance(error_info, dict) else str(error_info)
+        )
         logger.error(f"Apilayer API error: {error_message}, full response: {data}")
         raise RuntimeError(f"Apilayer ошибка: {error_message}")
 
@@ -93,17 +94,18 @@ def _check_marketstack_error(data: dict) -> None:
     """
     if "error" in data:
         error_data = data["error"]
-        error_message = error_data.get('message', 'Неизвестная ошибка') if isinstance(error_data, dict) else str(
-            error_data)
+        error_message = (
+            error_data.get("message", "Неизвестная ошибка") if isinstance(error_data, dict) else str(error_data)
+        )
         logger.error(f"Marketstack API error: {error_message}, full response: {data}")
         raise RuntimeError(f"Marketstack ошибка: {error_message}")
 
 
 def fetch_from_api(
-        url: str,
-        params: Optional[dict] = None,
-        headers: Optional[dict] = None,
-        check_error_fn: Optional[Callable[[dict], Any]] = None
+    url: str,
+    params: Optional[dict] = None,
+    headers: Optional[dict] = None,
+    check_error_fn: Optional[Callable[[dict], Any]] = None,
 ) -> dict:
     """
     Universal function for API requests.
@@ -173,12 +175,7 @@ def fetch_from_apilayer(endpoint: str, params: dict) -> dict:
     url = f"{base_url}/{endpoint}"
     headers = _create_apilayer_headers(api_key)
 
-    return fetch_from_api(
-        url=url,
-        params=params,
-        headers=headers,
-        check_error_fn=_check_apilayer_error
-    )
+    return fetch_from_api(url=url, params=params, headers=headers, check_error_fn=_check_apilayer_error)
 
 
 def fetch_from_marketstack(endpoint: str, params: dict) -> dict:
@@ -200,9 +197,4 @@ def fetch_from_marketstack(endpoint: str, params: dict) -> dict:
     url = f"{base_url}/{endpoint}"
     request_params = _create_marketstack_params(api_key, params)
 
-    return fetch_from_api(
-        url=url,
-        params=request_params,
-        headers=None,
-        check_error_fn=_check_marketstack_error
-    )
+    return fetch_from_api(url=url, params=request_params, headers=None, check_error_fn=_check_marketstack_error)

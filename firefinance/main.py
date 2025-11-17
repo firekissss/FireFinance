@@ -12,11 +12,7 @@ def main() -> None:
     """
     main function, entry point for FireFinance
     """
-    setup_logging(
-        level=logging.DEBUG,
-        enable_console=True,
-        enable_file=True
-    )
+    setup_logging(level=logging.DEBUG, enable_console=True, enable_file=True)
 
     logger.info("FireFinance application started")
 
@@ -24,12 +20,14 @@ def main() -> None:
         print_banner()
         logger.debug("Banner displayed")
 
-        print("\nHello! How are you?\n"
-              "Here are pages that you can view from the menu:\n"
-              "1. Main page\n"
-              "2. Services (for now - only analyse cashback within given month and year)\n"
-              "3. Reports (for now - only spending by categories)\n"
-              "That's all for now. All results will appear as json string.\n")
+        print(
+            "\nHello! How are you?\n"
+            "Here are pages that you can view from the menu:\n"
+            "1. Main page\n"
+            "2. Services (for now - only analyse cashback within given month and year)\n"
+            "3. Reports (for now - only spending by categories)\n"
+            "That's all for now. All results will appear as json string.\n"
+        )
 
         user_input = input("Enter the page number: ")
         logger.info(f"User selected page: {user_input}")
@@ -47,10 +45,7 @@ def main() -> None:
             year = input("Enter the year: ")
             logger.debug(f"Services page requested with year: {year}, month: {month}")
             print("OK lets go, look at this: \n")
-            result = services_page_view(
-                int(year) if year else 2020,
-                int(month) if month else 1
-            )
+            result = services_page_view(int(year) if year else 2020, int(month) if month else 1)
             print(result)
             logger.info("Services page view completed successfully")
 
@@ -62,11 +57,7 @@ def main() -> None:
 
             print("\nOK lets go, look at this:\n")
 
-            result = reports_page_view(
-                cat_name,
-                date if date else None,
-                output_file=out_file if out_file else None
-            )
+            result = reports_page_view(cat_name, date if date else None, output_file=out_file if out_file else None)
 
             if input("1 if u wanna see the file content: ") == "1":
                 print(result)
@@ -85,5 +76,5 @@ def main() -> None:
         raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

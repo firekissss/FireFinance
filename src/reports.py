@@ -9,10 +9,9 @@ from src.utils import calculate_date_range, filter_transactions_by_category_and_
 logger = get_logger(__name__)
 
 
-def spending_by_category(transactions: pd.DataFrame,
-                         category: str,
-                         date: Optional[str] = None,
-                         months_period: int = 3) -> pd.DataFrame:
+def spending_by_category(
+    transactions: pd.DataFrame, category: str, date: Optional[str] = None, months_period: int = 3
+) -> pd.DataFrame:
     """
     Returns spending transactions for specified category over last N months.
 
@@ -25,8 +24,10 @@ def spending_by_category(transactions: pd.DataFrame,
     Returns:
         pd.DataFrame: Filtered transactions for the category over specified period
     """
-    logger.info(f"Starting spending_by_category analysis for category: '{category}', "
-                f"period: {months_period} months, end date: {date}")
+    logger.info(
+        f"Starting spending_by_category analysis for category: '{category}', "
+        f"period: {months_period} months, end date: {date}"
+    )
     logger.debug(f"Input transactions shape: {transactions.shape}")
 
     # Calculate date range

@@ -9,12 +9,7 @@ from src.utils import _clean_cashback_data, _sort_results, calculate_cashback_by
 logger = get_logger(__name__)
 
 
-def analyze_cashback_categories(
-        data: pd.DataFrame,
-        year: int,
-        month: int,
-        sort_by: str = 'cat'
-) -> str:
+def analyze_cashback_categories(data: pd.DataFrame, year: int, month: int, sort_by: str = "cat") -> str:
     """
     Main function for analyzing the profitability of enhanced cashback categories.
 

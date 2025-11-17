@@ -8,6 +8,7 @@ from src.decorators import log_exceptions, report_to_file
 
 #       report_to_file()
 
+
 def test_report_to_file_dataframe(mock_os_makedirs, mock_df_to_json, sample_df, monkeypatch):
     monkeypatch.setattr("builtins.print", lambda *a, **kw: None)
 
@@ -50,6 +51,7 @@ def test_report_to_file_default_filename(mock_os_makedirs, mock_df_to_json, samp
 
 
 #       log_exceptions()
+
 
 def test_log_exceptions_no_error(test_logger_fixture):
     @log_exceptions(test_logger_fixture)

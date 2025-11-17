@@ -15,11 +15,13 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 
 @overload
-def report_to_file(filename: F) -> F: ...
+def report_to_file(filename: F) -> F:
+    pass
 
 
 @overload
-def report_to_file(filename: str | None) -> Callable[[F], F]: ...
+def report_to_file(filename: str | None) -> Callable[[F], F]:
+    pass
 
 
 def report_to_file(filename: Any = None) -> Any:
@@ -52,7 +54,7 @@ def report_to_file(filename: Any = None) -> Any:
             # Convert DataFrame to JSON-friendly format
             if isinstance(result, pd.DataFrame):
                 # pandas сам умеет сериализовать Timestamp
-                result.to_json(out_file, orient="records", indent=4, force_ascii=False, date_format='iso')
+                result.to_json(out_file, orient="records", indent=4, force_ascii=False, date_format="iso")
             else:
                 with open(out_file, "w", encoding="utf-8") as f:
                     json.dump(result, f, ensure_ascii=False, indent=4)

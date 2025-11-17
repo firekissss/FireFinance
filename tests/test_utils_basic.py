@@ -62,12 +62,15 @@ def test_get_user_stocks(monkeypatch):
     assert result == ["AAPL", "TSLA"]
 
 
-@pytest.mark.parametrize("hour,expected", [
-    (7, "Доброе утро"),
-    (13, "Добрый день"),
-    (19, "Добрый вечер"),
-    (2, "Доброй ночи"),
-])
+@pytest.mark.parametrize(
+    "hour,expected",
+    [
+        (7, "Доброе утро"),
+        (13, "Добрый день"),
+        (19, "Добрый вечер"),
+        (2, "Доброй ночи"),
+    ],
+)
 def test_get_greeting_by_current_time(hour, expected, monkeypatch):
     class FakeDT:
         @classmethod

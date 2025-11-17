@@ -120,7 +120,7 @@ def import_transactions_from_file(file_path: str) -> pd.DataFrame:
     """
     logger.info(f"Importing transactions from file: {file_path}")
 
-    if not file_path.endswith('.xlsx'):
+    if not file_path.endswith(".xlsx"):
         logger.error(f"Unsupported file type: {file_path}. Only .xlsx supported.")
         raise ValueError(f"Неподдерживаемый тип файла: {file_path}. Поддерживается только .xlsx.")
 
@@ -166,7 +166,7 @@ def filter_by_date_interval(input_dataframe: pd.DataFrame, date_start: datetime,
 
     filtered_df = input_dataframe[
         (input_dataframe["Дата операции"] >= date_start) & (input_dataframe["Дата операции"] <= date_end)
-        ]
+    ]
 
     logger.debug(f"Filtering completed. Output shape: {filtered_df.shape}")
     logger.debug(f"Rows removed: {len(input_dataframe) - len(filtered_df)}")
@@ -186,11 +186,13 @@ def analyze_df_structure(df: pd.DataFrame) -> dict:
         "columns": df.columns.tolist(),
         "dtypes": df.dtypes.to_dict(),
         "missing_ratio": df.isna().mean().to_dict(),
-        "example_rows": df.head(3).to_dict(orient="records")
+        "example_rows": df.head(3).to_dict(orient="records"),
     }
 
-    logger.debug(f"DataFrame analysis completed. Columns: {len(analysis['columns'])}, "
-                 f"missing ratios: {analysis['missing_ratio']}")
+    logger.debug(
+        f"DataFrame analysis completed. Columns: {len(analysis['columns'])}, "
+        f"missing ratios: {analysis['missing_ratio']}"
+    )
 
     return analysis
 
@@ -207,22 +209,13 @@ def get_cards_info(df: pd.DataFrame) -> list[dict]:
         logger.warning("Empty dataframe provided for cards info")
         return []
 
-    grouped = (
-        df.groupby("Номер карты", as_index=False)
-        .agg({"Сумма операции с округлением": "sum", "Кэшбэк": "sum"})
-    )
+    grouped = df.groupby("Номер карты", as_index=False).agg({"Сумма операции с округлением": "sum", "Кэшбэк": "sum"})
     logger.debug(f"Grouped by {len(grouped)} cards")
 
     result = [
-        {
-            "last_digits": str(card)[-4:],
-            "total_spent": round(total, 2),
-            "cashback": round(cashback, 2)
-        }
+        {"last_digits": str(card)[-4:], "total_spent": round(total, 2), "cashback": round(cashback, 2)}
         for card, total, cashback in zip(
-            grouped["Номер карты"],
-            grouped["Сумма операции с округлением"],
-            grouped["Кэшбэк"]
+            grouped["Номер карты"], grouped["Сумма операции с округлением"], grouped["Кэшбэк"]
         )
     ]
 
@@ -249,9 +242,7 @@ def group_transfers_between_cards(df: pd.DataFrame) -> pd.DataFrame:
             # проверяем каждую пару по времени
             times = group["Дата операции"].sort_values()
             for i, t1 in enumerate(times):
-                near = group[
-                    (group["Дата операции"] - t1).dt.total_seconds().abs() <= 2
-                    ]
+                near = group[(group["Дата операции"] - t1).dt.total_seconds().abs() <= 2]
                 if len(near) == 2:
                     # две операции — оставляем положительную
                     idx_pos = near.loc[near["Сумма платежа"] > 0].index
@@ -303,7 +294,7 @@ def get_top_transactions(df: pd.DataFrame, top_n: int = 5) -> pd.DataFrame:
         top_df = df.copy()
         logger.debug(f"Using all {len(df)} transactions for analysis")
     else:
-        top_idx = np.argpartition(abs_sum, -top_n * 2)[-top_n * 2:]
+        top_idx = np.argpartition(abs_sum, -top_n * 2)[-top_n * 2 :]
         top_df = df.iloc[top_idx].copy()
         logger.debug(f"Selected top {top_n * 2} transactions for analysis")
 
@@ -311,11 +302,9 @@ def get_top_transactions(df: pd.DataFrame, top_n: int = 5) -> pd.DataFrame:
 
     # сортировка по модулю суммы и дате (подготовка к возврату)
     top_df["abs_sum"] = top_df["Сумма платежа"].abs()
-    top_df = top_df.sort_values(
-        by=["abs_sum", "Дата операции"],
-        ascending=[False, False],
-        kind="mergesort"
-    ).drop(columns=["abs_sum"])
+    top_df = top_df.sort_values(by=["abs_sum", "Дата операции"], ascending=[False, False], kind="mergesort").drop(
+        columns=["abs_sum"]
+    )
 
     # возврат ровно top_n строк
     result = top_df.head(top_n).reset_index(drop=True)
@@ -346,13 +335,12 @@ def format_top_transactions_to_list(df: pd.DataFrame) -> list[dict]:
 
     transactions = [
         {
-            "date": pd.to_datetime(row["Дата операции"]).strftime("%d.%m.%Y")
-            if pd.notna(row["Дата операции"]) else "",
+            "date": (
+                pd.to_datetime(row["Дата операции"]).strftime("%d.%m.%Y") if pd.notna(row["Дата операции"]) else ""
+            ),
             "amount": float(row["Сумма платежа"]),
-            "category": str(row.get("Категория", ""))
-            if pd.notna(row.get("Категория", "")) else "",
-            "description": str(row.get("Описание", ""))
-            if pd.notna(row.get("Описание", "")) else ""
+            "category": str(row.get("Категория", "")) if pd.notna(row.get("Категория", "")) else "",
+            "description": str(row.get("Описание", "")) if pd.notna(row.get("Описание", "")) else "",
         }
         for _, row in df.iterrows()
     ]
@@ -379,10 +367,7 @@ def get_currency_rates(base_currency: str, symbols: list[str]) -> list[dict[str,
         logger.warning("Empty symbols list provided for currency rates")
         return []
 
-    params = {
-        "source": base_currency,
-        "currencies": ",".join(symbols)
-    }
+    params = {"source": base_currency, "currencies": ",".join(symbols)}
 
     data = fetch_from_apilayer("live", params)
     quotes = data.get("quotes")
@@ -423,10 +408,7 @@ def get_stock_prices(symbols: list[str]) -> list[dict[str, Any]]:
         logger.warning("Empty symbols list provided for stock prices")
         return []
 
-    params = {
-        "symbols": ",".join(symbols),
-        "limit": len(symbols)
-    }
+    params = {"symbols": ",".join(symbols), "limit": len(symbols)}
 
     data = fetch_from_marketstack("eod/latest", params)
     stocks = data.get("data")
@@ -467,7 +449,7 @@ def filter_data_by_date(data: pd.DataFrame, year: int, month: int) -> pd.DataFra
 
     logger.debug(f"Filtering data by date: {year}-{month:02d}. Input shape: {data.shape}")
 
-    mask = (data['Дата операции'].dt.year == year) & (data['Дата операции'].dt.month == month)
+    mask = (data["Дата операции"].dt.year == year) & (data["Дата операции"].dt.month == month)
     filtered_data: pd.DataFrame = data[mask].copy()
 
     logger.debug(f"Date filtering completed. Output shape: {filtered_data.shape}")
@@ -489,15 +471,13 @@ def _clean_cashback_data(data: pd.DataFrame) -> pd.DataFrame:
     logger.debug(f"Cleaning cashback data. Input shape: {data.shape}")
 
     initial_count = len(data)
-    cleaned_data = data.dropna(subset=['Кэшбэк'])
+    cleaned_data = data.dropna(subset=["Кэшбэк"])
 
     after_dropna_count = len(cleaned_data)
     if initial_count != after_dropna_count:
         logger.debug(f"Removed {initial_count - after_dropna_count} rows with NaN cashback")
 
-    cleaned_data = cleaned_data[
-        cleaned_data['Кэшбэк'].apply(lambda x: isinstance(x, (int, float)))
-    ]
+    cleaned_data = cleaned_data[cleaned_data["Кэшбэк"].apply(lambda x: isinstance(x, (int, float)))]
 
     final_count = len(cleaned_data)
     logger.debug(f"Cashback data cleaning completed. Output shape: {cleaned_data.shape}")
@@ -522,7 +502,7 @@ def calculate_cashback_by_category(data: pd.DataFrame) -> Dict[str, float]:
         logger.warning("Empty dataframe provided for cashback calculation")
         return {}
 
-    cashback_by_category = data.groupby('Категория')['Кэшбэк'].sum()
+    cashback_by_category = data.groupby("Категория")["Кэшбэк"].sum()
     result = {str(category): round(float(amount), 2) for category, amount in cashback_by_category.items()}
 
     logger.debug(f"Cashback calculated for {len(result)} categories")
@@ -548,7 +528,7 @@ def _sort_results(result_dict: Dict[str, float], sort_by: str) -> Dict[str, floa
         logger.debug("Empty dictionary provided for sorting")
         return {}
 
-    if sort_by == 'sum':
+    if sort_by == "sum":
         result = dict(sorted(result_dict.items(), key=lambda x: x[1], reverse=True))
         logger.debug("Results sorted by cashback amount (descending)")
     else:  # 'cat' или любое другое значение
@@ -590,10 +570,7 @@ def calculate_date_range(date: Optional[str] = None, months_period: int = 3) -> 
 
 
 def filter_transactions_by_category_and_date(
-        df: pd.DataFrame,
-        category: str,
-        start_date: datetime,
-        end_date: datetime
+    df: pd.DataFrame, category: str, start_date: datetime, end_date: datetime
 ) -> pd.DataFrame:
     """
     Filters transactions by category and date range.
@@ -611,10 +588,8 @@ def filter_transactions_by_category_and_date(
     logger.debug(f"Input shape: {df.shape}")
 
     filtered = df[
-        (df["Категория"] == category) &
-        (df["Дата операции"] >= start_date) &
-        (df["Дата операции"] <= end_date)
-        ]
+        (df["Категория"] == category) & (df["Дата операции"] >= start_date) & (df["Дата операции"] <= end_date)
+    ]
 
     logger.debug(f"Filtering completed. Output shape: {filtered.shape}")
     logger.debug(f"Rows matching criteria: {len(filtered)}")

@@ -47,9 +47,7 @@ def test_get_currency_rates_no_quotes(mock_api):
 # api didn't give the rate to some of the currencies from our list
 @patch("src.utils.fetch_from_apilayer")
 def test_get_currency_rates_missing_currency(mock_api):
-    mock_api.return_value = {
-        "quotes": {"USDEUR": 0.9}
-    }
+    mock_api.return_value = {"quotes": {"USDEUR": 0.9}}
 
     # USDJPY отсутствует
     with pytest.raises(RuntimeError):
@@ -96,12 +94,7 @@ def test_get_stock_prices_no_data(mock_api):
 # no 'close' or 'symbol' param in response
 @patch("src.utils.fetch_from_marketstack")
 def test_get_stock_prices_missing_fields(mock_api):
-    mock_api.return_value = {
-        "data": [
-            {"symbol": "AAPL"},  # нет close
-            {"symbol": None, "close": 100}  # нет имени
-        ]
-    }
+    mock_api.return_value = {"data": [{"symbol": "AAPL"}, {"symbol": None, "close": 100}]}
 
     result = get_stock_prices(["AAPL"])
 
