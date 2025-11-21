@@ -2,15 +2,26 @@ import json
 from datetime import datetime
 from typing import Optional
 
-from src.decorators import report_to_file
+import pandas as pd
+
+from src.decorators import log_exceptions, report_to_file
+from src.logs import get_logger
 from src.reports import spending_by_category
 from src.services import analyze_cashback_categories
-from src.utils import get_greeting_by_current_time, get_cards_info, import_transactions_from_file, \
-    filter_by_date_interval, get_date_interval, get_top_transactions, get_currency_rates, get_user_currencies, \
-    get_user_stocks, get_stock_prices, format_top_transactions_to_list
+from src.utils import (
+    filter_by_date_interval,
+    format_top_transactions_to_list,
+    get_cards_info,
+    get_currency_rates,
+    get_date_interval,
+    get_greeting_by_current_time,
+    get_stock_prices,
+    get_top_transactions,
+    get_user_currencies,
+    get_user_stocks,
+    import_transactions_from_file,
+)
 
-from src.logs import get_logger
-from src.decorators import log_exceptions
 
 logger = get_logger(__name__)
 
@@ -47,9 +58,11 @@ def main_page_view(input_date: str, input_format: str = "%Y-%m-%d %H:%M:%S") -> 
     currency_rates = get_currency_rates("RUB", currencies)  # list[dict[str, Any]]
     stock_prices = get_stock_prices(stocks)  # list[dict[str, Any]]
 
-    logger.debug(f"Components prepared - greeting: {greeting}, cards: {len(cards_info)}, "
-                 f"transactions: {len(top_5_transactions_list)}, "
-                 f"currency rates: {len(currency_rates)}, stock prices: {len(stock_prices)}")
+    logger.debug(
+        f"Components prepared - greeting: {greeting}, cards: {len(cards_info)}, "
+        f"transactions: {len(top_5_transactions_list)}, "
+        f"currency rates: {len(currency_rates)}, stock prices: {len(stock_prices)}"
+    )
 
     json_response = json.dumps(
         {
@@ -57,8 +70,10 @@ def main_page_view(input_date: str, input_format: str = "%Y-%m-%d %H:%M:%S") -> 
             "cards": cards_info,
             "top_transactions": top_5_transactions_list,
             "currency_rates": currency_rates,
-            "stock_prices": stock_prices
-        }, ensure_ascii=False, indent=2
+            "stock_prices": stock_prices,
+        },
+        ensure_ascii=False,
+        indent=2,
     )
 
     logger.info("Main page view generated successfully")
@@ -82,7 +97,7 @@ def services_page_view(year: int, month: int) -> str:
     data = import_transactions_from_file("../data/example_operations.xlsx")
     logger.debug(f"Data loaded for cashback analysis: {len(data)} transactions")
 
-    result = analyze_cashback_categories(data, year, month, sort_by='cat')
+    result = analyze_cashback_categories(data, year, month, sort_by="cat")
 
     logger.info(f"Services page view generated successfully for {year}-{month:02d}")
     logger.debug(f"Cashback analysis result length: {len(result)} characters")
@@ -91,11 +106,7 @@ def services_page_view(year: int, month: int) -> str:
 
 
 @log_exceptions(logger)
-def reports_page_view(
-        cat_name: str,
-        date: Optional[str] = None,
-        output_file: Optional[str] = None
-):
+def reports_page_view(cat_name: str, date: Optional[str] = None, output_file: Optional[str] = None) -> pd.DataFrame:
     """
     Displays reports page with spending analysis by category.
 
@@ -122,7 +133,7 @@ def reports_page_view(
         logger.debug("Using default report filename")
 
     # Вызываем декорированную версию
-    result = wrapped(data, cat_name, date)
+    result: pd.DataFrame = wrapped(data, cat_name, date)
 
     logger.info(f"Reports page view generated successfully for category: '{cat_name}'")
     logger.debug(f"Report result: {len(result)} transactions found")

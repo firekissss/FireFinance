@@ -1,13 +1,10 @@
-import pytest
-import pandas as pd
 from datetime import datetime
 from unittest.mock import patch
 
-from src.utils import (
-    import_transactions_from_file,
-    filter_by_date_interval,
-    analyze_df_structure,
-)
+import pandas as pd
+import pytest
+
+from src.utils import analyze_df_structure, filter_by_date_interval, import_transactions_from_file
 
 
 # testing import_transactions_from_file
@@ -15,10 +12,7 @@ from src.utils import (
 
 # success import
 def test_import_transactions_from_file_success(tmp_path):
-    df = pd.DataFrame({
-        "Дата операции": ["01.01.2024", "02.01.2024"],
-        "Сумма платежа": [100, 200]
-    })
+    df = pd.DataFrame({"Дата операции": ["01.01.2024", "02.01.2024"], "Сумма платежа": [100, 200]})
     file_path = tmp_path / "test.xlsx"
     df.to_excel(file_path, index=False)
 
@@ -51,10 +45,7 @@ def test_import_transactions_empty_file(_mock_read):
 
 # incorrect data gets removed
 def test_import_transactions_invalid_dates(tmp_path):
-    df = pd.DataFrame({
-        "Дата операции": ["01.01.2024", "invalid_date"],
-        "Сумма платежа": [100, 200]
-    })
+    df = pd.DataFrame({"Дата операции": ["01.01.2024", "invalid_date"], "Сумма платежа": [100, 200]})
     file_path = tmp_path / "iphone.xlsx"
     df.to_excel(file_path, index=False)
 
@@ -69,12 +60,9 @@ def test_import_transactions_invalid_dates(tmp_path):
 
 # ok
 def test_filter_by_date_interval():
-    df = pd.DataFrame({
-        "Дата операции": pd.to_datetime([
-            "2024-01-01", "2024-02-01", "2024-03-01"
-        ]),
-        "Сумма": [1, 2, 3]
-    })
+    df = pd.DataFrame(
+        {"Дата операции": pd.to_datetime(["2024-01-01", "2024-02-01", "2024-03-01"]), "Сумма": [1, 2, 3]}
+    )
 
     start = datetime(2024, 2, 1)
     end = datetime(2024, 3, 1)
@@ -96,10 +84,7 @@ def test_filter_by_date_interval_empty_df():
 
 
 def test_analyze_df_structure():
-    df = pd.DataFrame({
-        "A": [1, None, 3],
-        "B": ["x", "y", "z"]
-    })
+    df = pd.DataFrame({"A": [1, None, 3], "B": ["x", "y", "z"]})
 
     info = analyze_df_structure(df)
 

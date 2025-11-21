@@ -1,20 +1,22 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 import requests
 
 from src.api_client import (
-    get_api_key,
-    _create_apilayer_headers,
-    _create_marketstack_params,
     _check_apilayer_error,
     _check_marketstack_error,
+    _create_apilayer_headers,
+    _create_marketstack_params,
     fetch_from_api,
     fetch_from_apilayer,
     fetch_from_marketstack,
+    get_api_key,
 )
 
 
 # get_api_key
+
 
 def test_get_api_key_success(monkeypatch):
     monkeypatch.setenv("TEST_KEY", "123")
@@ -29,6 +31,7 @@ def test_get_api_key_missing(monkeypatch):
 
 # create headers / params
 
+
 def test_create_apilayer_headers():
     assert _create_apilayer_headers("ABC") == {"apikey": "ABC"}
 
@@ -41,6 +44,7 @@ def test_create_marketstack_params():
 
 
 # Error checkers
+
 
 @pytest.mark.parametrize(
     "data",
@@ -76,6 +80,7 @@ def test_check_marketstack_error_ok():
 
 # fetch_from_api
 
+
 def test_fetch_from_api_success(mock_response_success):
     with patch("requests.get", return_value=mock_response_success):
         result = fetch_from_api("http://test.com", {"q": 1})
@@ -96,9 +101,7 @@ def test_fetch_from_api_connection_error():
 
 def test_fetch_from_api_http_error():
     mock_resp = MagicMock()
-    mock_resp.raise_for_status.side_effect = requests.HTTPError(
-        response=MagicMock(status_code=500)
-    )
+    mock_resp.raise_for_status.side_effect = requests.HTTPError(response=MagicMock(status_code=500))
     with patch("requests.get", return_value=mock_resp):
         with pytest.raises(RuntimeError):
             fetch_from_api("http://x")
@@ -121,6 +124,7 @@ def test_fetch_from_api_calls_error_checker(mock_response_success):
 
 # fetch_from_apilayer
 
+
 @patch("src.api_client.fetch_from_api")
 @patch("src.api_client._create_apilayer_headers")
 @patch("src.api_client.get_api_key", return_value="KEY")
@@ -137,6 +141,7 @@ def test_fetch_from_apilayer(load_dotenv_mock, get_key_mock, headers_mock, fetch
 
 
 # fetch_from_marketstack
+
 
 @patch("src.api_client.fetch_from_api")
 @patch("src.api_client._create_marketstack_params")

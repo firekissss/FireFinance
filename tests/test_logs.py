@@ -1,34 +1,29 @@
 import logging
 import sys
-
-import pytest
-from src import logs
 from logging.handlers import RotatingFileHandler
 
+import pytest
 
-@pytest.mark.parametrize("enable_file, enable_console", [
-    (True, False),
-    (False, True),
-    (True, True)
-])
+from src import logs
+
+
+@pytest.mark.parametrize("enable_file, enable_console", [(True, False), (False, True), (True, True)])
 @pytest.mark.parametrize("level", [logging.DEBUG, logging.INFO, logging.WARNING])
 def test_setup_logging_unique_logger(temp_log_dir, cleanup_loggers, enable_file, enable_console, level):
-    logger_name = f"i_spent_6_hours_on_this_test"
+    logger_name = "i_spent_6_hours_on_this_test"
 
-    logs.setup_logging(
-        level=level,
-        enable_file=enable_file,
-        enable_console=enable_console,
-        log_dir=temp_log_dir
-    )
+    logs.setup_logging(level=level, enable_file=enable_file, enable_console=enable_console, log_dir=temp_log_dir)
 
     logger = logs.get_logger(logger_name)
     assert logger.name == logger_name
 
     root_logger = logging.getLogger()
     file_handlers = [h for h in root_logger.handlers if isinstance(h, RotatingFileHandler)]
-    console_handlers = [h for h in root_logger.handlers
-                        if isinstance(h, logging.StreamHandler) and getattr(h, 'stream', None) == sys.stdout]
+    console_handlers = [
+        h
+        for h in root_logger.handlers
+        if isinstance(h, logging.StreamHandler) and getattr(h, "stream", None) == sys.stdout
+    ]
 
     # интересный факт, строчка выше
     # RotatingFileHandler наследуется от FileHandler -> StreamHandler

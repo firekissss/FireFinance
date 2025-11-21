@@ -4,17 +4,18 @@ import sys
 from logging.handlers import RotatingFileHandler
 from typing import Optional
 
+
 LOG_DIR_NAME = "logs"
 LOG_FILE_NAME = "app.log"
 
 
 def setup_logging(
-        level: int = logging.INFO,
-        max_bytes: int = 10 * 1024 * 1024,  # 10 MB per file
-        backup_count: int = 5,
-        enable_console: bool = False,
-        enable_file: bool = True,
-        log_dir: Optional[str] = None
+    level: int = logging.INFO,
+    max_bytes: int = 10 * 1024 * 1024,  # 10 MB per file
+    backup_count: int = 5,
+    enable_console: bool = False,
+    enable_file: bool = True,
+    log_dir: Optional[str] = None,
 ) -> None:
     """
     Initializes global logging configuration for the entire project.
@@ -55,9 +56,7 @@ def setup_logging(
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, LOG_FILE_NAME)
 
-    formatter = logging.Formatter(
-        "%(asctime)s | %(levelname)-8s | %(name)s | %(filename)s:%(lineno)d | %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s | %(levelname)-8s | %(name)s | %(filename)s:%(lineno)d | %(message)s")
 
     # Получаем корневой логгер
     root_logger = logging.getLogger()
@@ -70,12 +69,7 @@ def setup_logging(
 
     # File handler (с ротацией)
     if enable_file:
-        file_handler = RotatingFileHandler(
-            log_file,
-            maxBytes=max_bytes,
-            backupCount=backup_count,
-            encoding="utf-8"
-        )
+        file_handler = RotatingFileHandler(log_file, maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8")
         file_handler.setFormatter(formatter)
         file_handler.setLevel(level)
         root_logger.addHandler(file_handler)

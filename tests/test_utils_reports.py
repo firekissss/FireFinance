@@ -1,10 +1,8 @@
-import pandas as pd
 from datetime import datetime
 
-from src.utils import (
-    calculate_date_range,
-    filter_transactions_by_category_and_date,
-)
+import pandas as pd
+
+from src.utils import calculate_date_range, filter_transactions_by_category_and_date
 
 
 # testing calculate_date_range
@@ -42,15 +40,13 @@ def test_calculate_date_range_default_date(monkeypatch):
 
 # correct
 def test_filter_transactions_by_category_and_date():
-    df = pd.DataFrame({
-        "Категория": ["Еда", "Еда", "Транспорт"],
-        "Дата операции": pd.to_datetime([
-            "2024-01-10",
-            "2024-02-15",
-            "2024-01-20"
-        ]),
-        "Сумма": [100, 200, 300],
-    })
+    df = pd.DataFrame(
+        {
+            "Категория": ["Еда", "Еда", "Транспорт"],
+            "Дата операции": pd.to_datetime(["2024-01-10", "2024-02-15", "2024-01-20"]),
+            "Сумма": [100, 200, 300],
+        }
+    )
 
     start = datetime(2024, 1, 1)
     end = datetime(2024, 1, 31)
@@ -63,10 +59,12 @@ def test_filter_transactions_by_category_and_date():
 
 # nothing suits the date
 def test_filter_transactions_by_category_and_date_no_matches():
-    df = pd.DataFrame({
-        "Категория": ["Еда", "Еда"],
-        "Дата операции": pd.to_datetime(["2024-01-10", "2024-02-15"]),
-    })
+    df = pd.DataFrame(
+        {
+            "Категория": ["Еда", "Еда"],
+            "Дата операции": pd.to_datetime(["2024-01-10", "2024-02-15"]),
+        }
+    )
 
     start = datetime(2024, 3, 1)
     end = datetime(2024, 3, 31)
@@ -78,10 +76,12 @@ def test_filter_transactions_by_category_and_date_no_matches():
 
 # nothing suits the category
 def test_filter_transactions_by_category_and_date_wrong_category():
-    df = pd.DataFrame({
-        "Категория": ["Еда", "Транспорт"],
-        "Дата операции": pd.to_datetime(["2024-01-10", "2024-01-20"]),
-    })
+    df = pd.DataFrame(
+        {
+            "Категория": ["Еда", "Транспорт"],
+            "Дата операции": pd.to_datetime(["2024-01-10", "2024-01-20"]),
+        }
+    )
 
     start = datetime(2024, 1, 1)
     end = datetime(2024, 1, 31)
@@ -93,10 +93,12 @@ def test_filter_transactions_by_category_and_date_wrong_category():
 
 # borders of the given range
 def test_filter_transactions_by_category_and_date_boundaries():
-    df = pd.DataFrame({
-        "Категория": ["Еда"],
-        "Дата операции": pd.to_datetime(["2024-05-01"]),
-    })
+    df = pd.DataFrame(
+        {
+            "Категория": ["Еда"],
+            "Дата операции": pd.to_datetime(["2024-05-01"]),
+        }
+    )
 
     start = datetime(2024, 5, 1)
     end = datetime(2024, 5, 1)

@@ -1,17 +1,19 @@
-import pytest
-import pandas as pd
 import json
+
+import pandas as pd
+import pytest
+
 from src import services
 
 
-
-
-
-@pytest.mark.parametrize("year, month, sort_by, expected_categories", [
-    (2007, 3, "cat", ['Супермаркеты', 'Аптеки', 'Дом и ремонт', 'Косметика']),
-    (2007, 3, "sum", ['Супермаркеты', 'Аптеки', 'Дом и ремонт', 'Косметика']),
-    (2007, 2, "cat", ['Дом и ремонт']),
-])
+@pytest.mark.parametrize(
+    "year, month, sort_by, expected_categories",
+    [
+        (2007, 3, "cat", ["Супермаркеты", "Аптеки", "Дом и ремонт", "Косметика"]),
+        (2007, 3, "sum", ["Супермаркеты", "Аптеки", "Дом и ремонт", "Косметика"]),
+        (2007, 2, "cat", ["Дом и ремонт"]),
+    ],
+)
 def test_analyze_cashback_categories_basic(transactions_dataframe, caplog, year, month, sort_by, expected_categories):
     caplog.set_level("DEBUG", logger="src.services")
 
